@@ -21,4 +21,5 @@ executable qft
   ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
   -- other-modules:       
-  build-depends:       base ==4.6.*
+  build-depends:       base == 4.* ,
+                       transformers

@@ -16,6 +16,9 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 executable qft
-  -- main-is:             
+  main-is:             main.hs
+  hs-source-dirs:      exe
+  ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-prof-options: -caf-all -auto-all
   -- other-modules:       
   build-depends:       base ==4.6.*

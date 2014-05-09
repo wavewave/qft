@@ -22,4 +22,15 @@ executable qft
   ghc-prof-options: -caf-all -auto-all
   -- other-modules:       
   build-depends:       base == 4.* ,
-                       transformers
+                       qft
+
+Library
+  hs-source-dirs: lib
+  ghc-options: 	-Wall -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-prof-options: -caf-all -auto-all
+  Build-Depends:   base == 4.*, 
+                   transformers
+  Exposed-Modules: 
+                   Tensor
+  Other-Modules: 
+

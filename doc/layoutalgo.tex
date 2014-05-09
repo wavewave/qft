@@ -1,0 +1,90 @@
+\documentclass{article}
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Choosing a layout for the graph}
+
+The procedure |vfreeze| is called near the end and
+chooses ``optimal'' vertex positions by minimizing the sum of the
+weighted lengths of the arcs.  Since the quantity to be optimized is
+quadratic in the vertices
+\begin{equation}
+  L = \frac{1}{2} \sum_i \sum_{j\in\alpha(i)}
+        t_{ij} (\vec v_i - \vec v_j)^2\,,
+\end{equation}
+where~$\alpha(i)$ denotes the set of vertices connectes with the
+vertex~$i$, we just have to solve a system of linear equations.
+Adding Lagrange multipliers~$\lambda_{ij}$ for the constraints that
+have been specified
+\begin{equation}
+  \Lambda = \sum_i \sum_{j\in\gamma(i) \atop j>i}
+        \vec\lambda_{ij}\cdot(\vec v_i - \vec v_j - \vec d_{ij})\,,
+\end{equation}
+where~$\gamma(i)$ denotes the set of vertices which have a fixed
+distance to the vertex~$i$, the set of linear equations is given by
+\begin{eqnarray}
+  0 & = & \frac{\partial}{\partial \vec v_i} (L+\Lambda)
+           = \sum_{j\in\alpha(i)} t_{ij} (\vec v_i - \vec v_j)
+             + \sum_{j\in\gamma(i) \atop j>i} \vec\lambda_{ij}
+             - \sum_{j\in\gamma(i) \atop j<i} \vec\lambda_{ji} \\
+  0 & = & \vec v_i - \vec v_j - \vec d_{ij}\;\; \mid  j \in \gamma(i)\,.
+\end{eqnarray}
+The implementation is simple: loop over all vertices in |vlist[]|
+and iff the position of the vertex has not been fixed yet, add
+another equation.  Note that each arc enters twice (incoming
+\emph{and} outgoing) in this procedure.  Thus it is easiest to store
+them \emph{both} ways in the |vlist| structure
+(cf.~page~\pageref{pg:vconnect})\label{pg:vfreeze}.
+Inquiring minds might want to see the result in numbers:
+Separate Langrange multipliers for~$x$ and~$y$:
+
+The Lagrange multiplier for a polynomial~$P$
+\begin{equation}
+  \Lambda_P = \sum_{i=2}^{n_P} \vec\lambda_{P,i}
+    \left( \vec v_{i+1} - \vec v_i
+            + R(2\pi/n_P) \left( \vec v_{i-1} - \vec v_i \right)
+    \right)
+\end{equation}
+can be reshuffled trivially
+\begin{eqnarray}
+  \Lambda_P & = &
+    \vec\lambda_{n-1} \vec v_{n}
+    - \vec\lambda_1 \vec v_2
+    + \vec\lambda_2 R(2\pi/n_P) \vec v_1
+    - \vec\lambda_n R(2\pi/n_P) \vec v_{n-1} \\
+    & & \mbox{} + \sum_{i=2}^{n_P}
+        \left( \vec\lambda_{i-1} + \vec\lambda_{i+1} R(2\pi/n_P)
+               - \vec\lambda_i (1 + R(2\pi/n_P)) \right) \vec v_i
+        \nonumber
+\end{eqnarray}
+Again, we can ask for positioning and drawing explicitely from \TeX{}
+(usually called implicitely by \verb|\end{fmfgraph}|).  This is useful for
+subsequent fine tuning.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

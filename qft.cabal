@@ -44,5 +44,6 @@ Library
   Exposed-Modules: 
                    Tensor
                    Topology
+                   Topology.PrettyPrint
   Other-Modules: 
 

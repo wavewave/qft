@@ -1,9 +1,11 @@
 {-# LANGUAGE TupleSections #-}
 
 module Topology
-( UndirEdge
-, SortedVertices
-, SortedEdges
+( Vertex
+, UndirEdge(edgeV1, edgeV2)
+, UndirGraph(vertices, edges)
+, SortedVertices(unSV)
+, SortedEdges(unSE)
 , edgecmp
 , mkUndirEdge
 , mkSortedVertices
@@ -21,7 +23,8 @@ import Data.Maybe (mapMaybe)
 
 type Vertex = Int
 
-data UndirEdge = UndirEdge Int Int
+data UndirEdge = UndirEdge { edgeV1 :: Int
+                           , edgeV2 :: Int }
                deriving Show
 
 verticesFromEdge :: UndirEdge -> [Int]

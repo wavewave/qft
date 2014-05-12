@@ -1,7 +1,9 @@
 module Main where
 
 import qualified Data.Foldable as F (forM_) 
+--
 import Topology 
+import Topology.PrettyPrint
 
 a = mkUndirEdge 1 2 
 
@@ -39,3 +41,7 @@ main = do
     print (pick2distinct vlst')
     putStrLn "==========="
     mapM_ print (generate1EdgeMore g1)
+
+    let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
+    sequence_ $ zipWith writeFile fnames (map makeDotGraph (generate1EdgeMore g1))
+    -- writeFile "test.dot" $ makeDotGraph (head (generate1EdgeMore g1))

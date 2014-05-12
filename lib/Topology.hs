@@ -11,19 +11,24 @@ module Topology
 , mkUndirGraph
 , addVertex
 , addEdge
+, pick2distinct
 , pick2
+, generate1EdgeMore
 ) where
 
 import Data.List (nub, sort, sortBy, tails )
+import Data.Maybe (mapMaybe)
 
 type Vertex = Int
 
 data UndirEdge = UndirEdge Int Int
                deriving Show
 
-getVertices :: UndirEdge -> [Int]
-getVertices (UndirEdge x y) = [x,y]
+verticesFromEdge :: UndirEdge -> [Int]
+verticesFromEdge (UndirEdge x y) = [x,y]
 
+isSelfish :: UndirEdge -> Bool
+isSelfish (UndirEdge x y) = x == y 
 
 edgecmp :: UndirEdge -> UndirEdge -> Ordering
 edgecmp (UndirEdge x1 x2) (UndirEdge y1 y2) = compare (x1,x2) (y1,y2)  
@@ -51,8 +56,9 @@ data UndirGraph = UG { edges :: SortedEdges
 
 mkUndirGraph :: [UndirEdge] -> [Vertex] -> Maybe UndirGraph
 mkUndirGraph es vs = 
-  let v1s = (nub . sort . concatMap getVertices) es
+  let v1s = (nub . sort . concatMap verticesFromEdge) es
   in if v1s == sort vs then Just (UG (mkSortedEdges es) (mkSortedVertices vs)) else Nothing
+
 
 addVertex :: UndirGraph -> Vertex -> UndirGraph
 addVertex (UG (SE es) (SV vs)) v = let vs' = v : vs in UG (SE es) (mkSortedVertices vs')
@@ -60,14 +66,13 @@ addVertex (UG (SE es) (SV vs)) v = let vs' = v : vs in UG (SE es) (mkSortedVerti
 addEdge :: UndirGraph -> UndirEdge -> Maybe UndirGraph
 addEdge (UG (SE es) (SV vs)) e = let es' = e : es in mkUndirGraph es' vs
 
-
-
 pick2distinct :: SortedVertices -> [ UndirEdge ] 
-pick2distinct (SV vs) = (map (uncurry UndirEdge) . concatMap f . tails) vs
+pick2distinct = filter (not . isSelfish) . pick2
+
+{- (SV vs) = (map (uncurry UndirEdge) . concatMap f . tails) vs
   where f :: [Vertex] -> [(Vertex,Vertex)] 
         f [] = []
-        f (x:xs) = map (x,) xs
-
+        f (x:xs) = map (x,) xs -}
 
 pick2 :: SortedVertices -> [ UndirEdge ] 
 pick2 (SV vs) = (map (uncurry UndirEdge) . concatMap f . tails) vs
@@ -75,4 +80,5 @@ pick2 (SV vs) = (map (uncurry UndirEdge) . concatMap f . tails) vs
         f [] = []
         f lst@(x:xs) = map (x,) lst
 
--- (concatMap (x,) . tails) xs
+generate1EdgeMore :: UndirGraph -> [UndirGraph] 
+generate1EdgeMore gr = (mapMaybe (addEdge gr) . pick2 . vertices) gr

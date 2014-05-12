@@ -32,5 +32,10 @@ main = do
     print (g1 `addEdge` d )
     print (g1 `addVertex` 4 `addEdge` d )
 
-  print (pick2 vlst)
-  print (pick2 vlst')
+    print (pick2 vlst)
+
+    putStrLn "-----------"
+    print (pick2 vlst')
+    print (pick2distinct vlst')
+    putStrLn "==========="
+    mapM_ print (generate1EdgeMore g1)

@@ -31,6 +31,7 @@ executable qft2
   ghc-prof-options: -caf-all -auto-all
   -- other-modules:       
   build-depends:       base == 4.* ,
+                       filepath,
                        qft
 
 
@@ -40,6 +41,8 @@ Library
   ghc-options: 	-Wall -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
   Build-Depends:   base == 4.*, 
+                   filepath,
+                   process,
                    transformers
   Exposed-Modules: 
                    Tensor

@@ -1,6 +1,7 @@
 module Main where
 
 import qualified Data.Foldable as F (forM_) 
+import System.FilePath
 --
 import Topology 
 import Topology.PrettyPrint
@@ -43,5 +44,9 @@ main = do
     mapM_ print (generate1EdgeMore g1)
 
     let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
-    sequence_ $ zipWith writeFile fnames (map makeDotGraph (generate1EdgeMore g1))
+        pairs= zip fnames (map makeDotGraph (generate1EdgeMore g1))
+
+    mapM_ (\(x,y) -> writeFile x y >> runDot x) pairs
     -- writeFile "test.dot" $ makeDotGraph (head (generate1EdgeMore g1))
+
+    writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 

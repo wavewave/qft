@@ -59,8 +59,9 @@ data UndirGraph = UG { edges :: SortedEdges
 
 mkUndirGraph :: [UndirEdge] -> [Vertex] -> Maybe UndirGraph
 mkUndirGraph es vs = 
-  let v1s = (nub . sort . concatMap verticesFromEdge) es
-  in if v1s == sort vs then Just (UG (mkSortedEdges es) (mkSortedVertices vs)) else Nothing
+  let v1s = (concatMap verticesFromEdge) es
+      b = all (`elem` vs) v1s 
+  in if b then Just (UG (mkSortedEdges es) (mkSortedVertices vs)) else Nothing
 
 
 addVertex :: UndirGraph -> Vertex -> UndirGraph
@@ -71,11 +72,6 @@ addEdge (UG (SE es) (SV vs)) e = let es' = e : es in mkUndirGraph es' vs
 
 pick2distinct :: SortedVertices -> [ UndirEdge ] 
 pick2distinct = filter (not . isSelfish) . pick2
-
-{- (SV vs) = (map (uncurry UndirEdge) . concatMap f . tails) vs
-  where f :: [Vertex] -> [(Vertex,Vertex)] 
-        f [] = []
-        f (x:xs) = map (x,) xs -}
 
 pick2 :: SortedVertices -> [ UndirEdge ] 
 pick2 (SV vs) = (map (uncurry UndirEdge) . concatMap f . tails) vs

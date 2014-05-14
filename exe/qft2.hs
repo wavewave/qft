@@ -23,30 +23,17 @@ vlst' = mkSortedVertices [1,4,7,11,22]
 main :: IO ()
 main = do 
   putStrLn "Topology test"
-  print a
-  print elst
-  print vlst
-  let mg1 = mkUndirGraph [a,b,c] [1,2,3]
-  F.forM_ mg1 $ \g1 -> do
-    print g1 
-    print (g1 `addVertex` 4)
-    print (g1 `addVertex` 1)
-    print (g1 `addEdge` a )
-    print (g1 `addEdge` d )
-    print (g1 `addVertex` 4 `addEdge` d )
-
-    print (pick2 vlst)
-
-    putStrLn "-----------"
-    print (pick2 vlst')
-    print (pick2distinct vlst')
-    putStrLn "==========="
-    mapM_ print (generate1EdgeMore g1)
+  let mg0 = mkUndirGraph [] [1,2,3,4]
+  F.forM_ mg0 $ \g0 -> do
+    putStrLn "okay"
+    let gs = do 
+           g1 <- generate1EdgeMore g0
+           g2 <- generate1EdgeMore g1
+           return g2
 
     let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
-        pairs= zip fnames (map makeDotGraph (generate1EdgeMore g1))
+        pairs= zip fnames (map makeDotGraph gs)
 
     mapM_ (\(x,y) -> writeFile x y >> runDot x) pairs
-    -- writeFile "test.dot" $ makeDotGraph (head (generate1EdgeMore g1))
 
     writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 

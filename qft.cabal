@@ -42,6 +42,7 @@ Library
   ghc-prof-options: -caf-all -auto-all
   Build-Depends:   base == 4.*, 
                    filepath,
+                   permutation,
                    process,
                    transformers
   Exposed-Modules: 

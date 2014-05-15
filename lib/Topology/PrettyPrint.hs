@@ -27,7 +27,7 @@ runDot f = readProcess "dot" [ "-Tpdf", f, "-o", dropExtension f <.> "pdf" ] ""
 makeTexFile filenames = 
     header ++ (intercalate "\n" .  map makeTexFig) filenames  ++ footer
   where 
-    header = "\\documentclass{article}\n\\usepackage{graphicx}\n\\begin{document}\n"
+    header = "\\documentclass{revtex4}\n\\usepackage{graphicx}\n\\begin{document}\n"
     footer = "\n\\end{document}\n"   
 
 makeTexFig filename = "\\includegraphics[width=5cm]{" ++ filename ++ ".pdf}"

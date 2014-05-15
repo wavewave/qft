@@ -32,6 +32,7 @@ executable qft2
   -- other-modules:       
   build-depends:       base == 4.* ,
                        filepath,
+                       permutation,
                        qft
 
 

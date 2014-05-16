@@ -22,11 +22,11 @@ vlst = mkSortedVertices [1, 2, 3]
 
 vlst' = mkSortedVertices [1,4,7,11,22] 
 
-main :: IO ()
-main = do
+main' :: IO ()
+main' = do
   let p = P.listPermute 4 [0,3,2,1] 
       test = do g <- mkUndirGraph [a,d] [1,2,3,4]
-                g1 <- canonicalize g
+                let g1 = canonicalize g
                 g2 <- permute p g1 
                 let vo = (vertexOrder . getGraph) g2
                 let g3 = sortVertex g2
@@ -39,8 +39,8 @@ main = do
 
 
 
-main' :: IO ()
-main' = do 
+main :: IO ()
+main = do 
   putStrLn "Topology test"
   let mg0 = mkUndirGraph [] [1,7,9]
   F.forM_ mg0 $ \g0 -> do
@@ -50,17 +50,15 @@ main' = do
            g2 <- generate1EdgeMore g1
            -- g3 <- generate1EdgeMore g2
            -- g4 <- generate1EdgeMore g3
-           return g2
+           (return . sortVertex . canonicalize) g2
 
-    mapM_ print gs
-    maybe (return ()) (\g' -> mapM_ print g') (mapM canonicalize gs)
+    -- mapM_ print gs
+    -- maybe (return ()) (\g' -> mapM_ print g') (mapM canonicalize gs)
 
-
-    {-
     let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
-        pairs= zip fnames (map makeDotGraph gs)
+        pairs= zip fnames (map (makeDotGraph . getGraph) gs)
 
     mapM_ (\(x,y) -> writeFile x y >> runDot x) pairs
 
     writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 
-    -}
+    

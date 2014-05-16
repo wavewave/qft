@@ -102,16 +102,16 @@ generate1EdgeMore gr = (mapMaybe (addEdge gr) . pick2 . vertices) gr
 newtype CanonicalUndirGraph = CanonicalUndirGraph { getGraph :: UndirGraph }
                             deriving (Show)
 
-reindex :: (Vertex -> Maybe Vertex) -> UndirEdge -> Maybe UndirEdge
-reindex f UndirEdge {..} = mkUndirEdge <$> f edgeV1 <*> f edgeV2
+reindex :: (Vertex -> Vertex) -> UndirEdge -> UndirEdge
+reindex f UndirEdge {..} = mkUndirEdge (f edgeV1) (f edgeV2)
 
-canonicalize :: UndirGraph -> Maybe CanonicalUndirGraph
-canonicalize go = do 
+canonicalize :: UndirGraph -> CanonicalUndirGraph
+canonicalize go =  
     let pairs = zip (unSV (vertices go)) [0..]
-        f x = lookup x pairs
-    es <- (mapM (reindex f) . unSE . edges) go
-    gr <- mkUndirGraph es (map snd pairs)
-    return (CanonicalUndirGraph gr)
+        f x = fromJust (lookup x pairs)
+        es = (map (reindex f) . unSE . edges) go
+        mgr = mkUndirGraph es (map snd pairs)
+    in (CanonicalUndirGraph  . fromJust) mgr
 
  
 graphOrder :: UndirGraph -> Int
@@ -124,14 +124,13 @@ vertexOrder g = let vs = (unSV . vertices) g
                     vs_edge = sort (foldr f [] es)
                     counts = (map ((,) <$> head <*> length) . group) vs_edge
                 in map (\x -> maybe (x,0) (x,) (lookup x counts)) vs
-  where f x acc = let r1:r2:[] = verticesFromEdge x 
-                  in r1:r2:acc
+  where f x acc = let r1:r2:[] = verticesFromEdge x in r1:r2:acc
 
 permute :: P.Permute -> CanonicalUndirGraph -> Maybe CanonicalUndirGraph
 permute p g = do 
     let ug = getGraph g
     guard (P.size p == graphOrder ug)
-    e' <- (mapM (reindex (Just . P.at p)) . unSE . edges) ug
+    let e' = (map (reindex (P.at p)) . unSE . edges) ug
     g' <- (mkUndirGraph e' . unSV . vertices) ug
     return (CanonicalUndirGraph g')
 
@@ -141,7 +140,7 @@ sortVertex g = let ug = getGraph g
                    vo = vertexOrder ug 
                    v' = map fst (sortBy (flip compare `on` snd) vo)
                    p = P.inverse (P.listPermute n v')
-               in trace (show v') $ fromJust (permute p g)
+               in fromJust (permute p g)
                         
 
     

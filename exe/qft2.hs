@@ -3,7 +3,7 @@ module Main where
 import           Control.Applicative
 import qualified Data.Foldable as F (forM_) 
 import           Data.Function (on)
-import           Data.List (sortBy)
+import           Data.List (nubBy, sortBy)
 import           Data.Maybe (fromJust)
 import qualified Data.Permute as P
 import           System.FilePath
@@ -55,7 +55,8 @@ main = do
            -- g4 <- generate1EdgeMore g3
            (return . sortVertex . canonicalize) g2
 
-    let gs' = (map fst . sortBy (compare `on` snd) . map ((,) <$> id <*> vertexOrder . getGraph)) gs 
+    let gs' = (map fst . nubBy ((==) `on` fst) . sortBy (flip compare `on` snd) . map ((,) <$> id <*> vertexOrder . getGraph)) gs 
+
     -- mapM_ print gs
     -- maybe (return ()) (\g' -> mapM_ print g') (mapM canonicalize gs)
 

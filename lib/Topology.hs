@@ -41,7 +41,7 @@ type Vertex = Int
 
 data UndirEdge = UndirEdge { edgeV1 :: Int
                            , edgeV2 :: Int }
-               deriving Show
+               deriving (Show, Eq)
 
 verticesFromEdge :: UndirEdge -> [Int]
 verticesFromEdge (UndirEdge x y) = [x,y]
@@ -57,13 +57,13 @@ mkUndirEdge x y | x <= y = UndirEdge x y
                 | otherwise = UndirEdge y x 
 
 data SortedVertices = SV { unSV :: [Vertex] }
-                    deriving Show
+                    deriving (Show, Eq)
 
 mkSortedVertices :: [Int] -> SortedVertices 
 mkSortedVertices = SV . nub . sort 
 
 data SortedEdges = SE { unSE :: [UndirEdge] }
-                 deriving Show
+                 deriving (Show, Eq)
 
 mkSortedEdges :: [UndirEdge] -> SortedEdges
 mkSortedEdges xs = SE (sortBy edgecmp xs) 
@@ -71,7 +71,7 @@ mkSortedEdges xs = SE (sortBy edgecmp xs)
 data UndirGraph = UG { edges :: SortedEdges
                      , vertices :: SortedVertices
                      }
-                deriving Show
+                deriving (Show, Eq)
 
 mkUndirGraph :: [UndirEdge] -> [Vertex] -> Maybe UndirGraph
 mkUndirGraph es vs = 
@@ -100,7 +100,7 @@ generate1EdgeMore gr = (mapMaybe (addEdge gr) . pick2 . vertices) gr
 
 
 newtype CanonicalUndirGraph = CanonicalUndirGraph { getGraph :: UndirGraph }
-                            deriving (Show)
+                            deriving (Show, Eq)
 
 reindex :: (Vertex -> Vertex) -> UndirEdge -> UndirEdge
 reindex f UndirEdge {..} = mkUndirEdge (f edgeV1) (f edgeV2)

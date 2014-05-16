@@ -7,7 +7,7 @@ module Topology
 , UndirGraph(vertices, edges)
 , SortedVertices(unSV)
 , SortedEdges(unSE)
-, CanonicalUndirGraph(unCanonicalUndirGraph)
+, CanonicalUndirGraph(getGraph)
 , edgecmp
 , mkUndirEdge
 , mkSortedVertices
@@ -20,15 +20,22 @@ module Topology
 , generate1EdgeMore
 , reindex
 , canonicalize
-, orderGraph
-, permuteGraph
+, graphOrder
+, vertexOrder
+, permute
+, sortVertex
 ) where
 
 import Control.Applicative
 import Control.Monad
-import Data.List (nub, sort, sortBy, tails )
-import Data.Maybe (mapMaybe)
+import Data.Function (on)
+import Data.List (nub, sort, sortBy, tails, lookup,group )
+import Data.Maybe (mapMaybe, fromJust)
 import qualified Data.Permute as P
+-- 
+import Debug.Trace
+import Prelude hiding (lookup)
+
 
 type Vertex = Int
 
@@ -92,7 +99,7 @@ generate1EdgeMore :: UndirGraph -> [UndirGraph]
 generate1EdgeMore gr = (mapMaybe (addEdge gr) . pick2 . vertices) gr
 
 
-newtype CanonicalUndirGraph = CanonicalUndirGraph { unCanonicalUndirGraph :: UndirGraph }
+newtype CanonicalUndirGraph = CanonicalUndirGraph { getGraph :: UndirGraph }
                             deriving (Show)
 
 reindex :: (Vertex -> Maybe Vertex) -> UndirEdge -> Maybe UndirEdge
@@ -107,19 +114,35 @@ canonicalize go = do
     return (CanonicalUndirGraph gr)
 
  
-orderGraph :: UndirGraph -> Int
-orderGraph = length . unSV . vertices
+graphOrder :: UndirGraph -> Int
+graphOrder = length . unSV . vertices
 
 
+vertexOrder :: UndirGraph -> [(Vertex,Int)]
+vertexOrder g = let vs = (unSV . vertices) g
+                    es = (unSE . edges) g
+                    vs_edge = sort (foldr f [] es)
+                    counts = (map ((,) <$> head <*> length) . group) vs_edge
+                in map (\x -> maybe (x,0) (x,) (lookup x counts)) vs
+  where f x acc = let r1:r2:[] = verticesFromEdge x 
+                  in r1:r2:acc
 
-permuteGraph :: P.Permute -> CanonicalUndirGraph -> Maybe CanonicalUndirGraph
-permuteGraph p g = do 
-    let ug = unCanonicalUndirGraph g
-    guard (P.size p == orderGraph ug)
+permute :: P.Permute -> CanonicalUndirGraph -> Maybe CanonicalUndirGraph
+permute p g = do 
+    let ug = getGraph g
+    guard (P.size p == graphOrder ug)
     e' <- (mapM (reindex (Just . P.at p)) . unSE . edges) ug
     g' <- (mkUndirGraph e' . unSV . vertices) ug
     return (CanonicalUndirGraph g')
 
-    
+sortVertex :: CanonicalUndirGraph -> CanonicalUndirGraph
+sortVertex g = let ug = getGraph g
+                   n = graphOrder ug
+                   vo = vertexOrder ug 
+                   v' = map fst (sortBy (flip compare `on` snd) vo)
+                   p = P.inverse (P.listPermute n v')
+               in trace (show v') $ fromJust (permute p g)
+                        
 
+    
 

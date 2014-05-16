@@ -1,6 +1,7 @@
 module Main where
 
 import qualified Data.Foldable as F (forM_) 
+import           Data.Maybe (fromJust)
 import qualified Data.Permute as P
 import           System.FilePath
 -- 
@@ -24,11 +25,19 @@ vlst' = mkSortedVertices [1,4,7,11,22]
 main :: IO ()
 main = do
   let p = P.listPermute 4 [0,3,2,1] 
-      test = do g <- mkUndirGraph [a,b,c,d] [1,2,3,4]
+      test = do g <- mkUndirGraph [a,d] [1,2,3,4]
                 g1 <- canonicalize g
-                g2 <- permuteGraph p g1 
-                return (g1,g2)
-  maybe (return ()) (\(g1,g2) -> print g1 >> print g2) test
+                g2 <- permute p g1 
+                let vo = (vertexOrder . getGraph) g2
+                let g3 = sortVertex g2
+                    vo' = (vertexOrder . getGraph) g3
+                return (vo,g2,g3,vo')
+  print test
+
+  -- return (g1,g2)
+  -- maybe (return ()) (\(g1,g2) -> print g1 >> print g2) test
+
+
 
 main' :: IO ()
 main' = do 

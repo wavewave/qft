@@ -1,27 +1,24 @@
-module Topology.PrettyPrint where
+module OldTopology.PrettyPrint where
 
-import Data.Array
-import Data.Graph
 import Data.List (intercalate)
 import System.FilePath ( (<.>), dropExtension )
 import System.Process
 --
+import OldTopology 
 
 
-makeDotEdge :: (Vertex,Vertex) -> String
-makeDotEdge (v1,v2) = show v1 ++ " -- " ++ show v2 ++ ";"
+makeDotEdge :: UndirEdge -> String
+makeDotEdge e = show (edgeV1 e) ++ " -- " ++ show (edgeV2 e) ++ ";"
 
 makeDotVertex :: Vertex -> String 
 makeDotVertex v = show v ++ " ;"
 
-makeDotGraph :: Graph -> String 
+makeDotGraph :: UndirGraph -> String 
 makeDotGraph gr = let header = "graph {"
-                      -- st1 = (map makeDotVertex . unSV . vertices) gr
-                      is = indices gr 
-                      pairs = [ (i,j) | i <- is, j <- gr ! i ]
-                      str = map  makeDotEdge pairs
+                      st1 = (map makeDotVertex . unSV . vertices) gr
+                      st2 = (map makeDotEdge . unSE . edges ) gr
                       footer = "}" 
-                  in intercalate "\n" ([header] ++ str ++ [footer])
+                  in intercalate "\n" ([header] ++ st1 ++ st2 ++ [footer])
 
 runDot :: FilePath -> IO ()
 runDot f = readProcess "dot" [ "-Tpdf", f, "-o", dropExtension f <.> "pdf" ] ""

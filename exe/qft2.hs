@@ -8,8 +8,8 @@ import           Data.Maybe (fromJust)
 import qualified Data.Permute as P
 import           System.FilePath
 -- 
-import           Topology 
-import           Topology.PrettyPrint
+import           OldTopology 
+import           OldTopology.PrettyPrint
 
 a = mkUndirEdge 1 2 
 
@@ -45,15 +45,15 @@ main' = do
 main :: IO ()
 main = do 
   putStrLn "Topology test"
-  let mg0 = mkUndirGraph [] [1,7,9]
+  let mg0 = mkUndirGraph [] [1,7,9,11]
   F.forM_ mg0 $ \g0 -> do
     putStrLn "okay"
     let gs = do 
            g1 <- generate1EdgeMore g0
            g2 <- generate1EdgeMore g1
-           -- g3 <- generate1EdgeMore g2
+           g3 <- generate1EdgeMore g2
            -- g4 <- generate1EdgeMore g3
-           (return . sortVertex . canonicalize) g2
+           (return . sortVertex . canonicalize) g3
 
     let gs' = (map fst . nubBy ((==) `on` fst) . sortBy (flip compare `on` snd) . map ((,) <$> id <*> vertexOrder . getGraph)) gs 
 

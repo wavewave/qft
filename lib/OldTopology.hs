@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
 
-module Topology
+module OldTopology
 ( Vertex
 , UndirEdge(edgeV1, edgeV2)
 , UndirGraph(vertices, edges)

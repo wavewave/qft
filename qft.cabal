@@ -40,6 +40,17 @@ executable qft1
 --                        hgal,
 --                        qft
 
+
+executable qft4
+  main-is:             qft4.hs
+  hs-source-dirs:      exe
+  ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-prof-options: -caf-all -auto-all
+  build-depends:       base == 4.*,
+                       array,
+                       filepath,
+                       qft
+
 Library
   hs-source-dirs: lib
   ghc-options: 	-Wall -funbox-strict-fields -fno-warn-unused-do-bind

@@ -9,8 +9,9 @@ module Permute where
 
 -- import Data.Type.Equality
 import GHC.TypeLits
+import Data.Proxy
 
-data Proxy (a :: Nat) = Proxy 
+-- data Proxy (a :: Nat) = Proxy 
 
 data TCMP = TLT | TEQ | TGT
 

@@ -29,16 +29,16 @@ executable qft1
 --                        -- permutation,
 --                        qft
 
-executable qft3
-  main-is:             qft3.hs
-  hs-source-dirs:      exe
-  ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
-  ghc-prof-options: -caf-all -auto-all
-  build-depends:       base == 4.*,
-                       array,
-                       filepath,
-                       hgal,
-                       qft
+-- executable qft3
+--   main-is:             qft3.hs
+--   hs-source-dirs:      exe
+--   ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+--   ghc-prof-options: -caf-all -auto-all
+--   build-depends:       base == 4.*,
+--                        array,
+--                        filepath,
+--                        hgal,
+--                        qft
 
 Library
   hs-source-dirs: lib
@@ -48,7 +48,7 @@ Library
                    array,
                    containers,
                    filepath,
-                   hgal,
+                   -- hgal,
                    -- permutation,
                    process,
                    transformers

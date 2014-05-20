@@ -82,13 +82,11 @@ maybeEither _ (Just x) = Right x
 newtype Within (n :: Nat) = MkWithin Integer 
                           deriving (Show, Eq, Ord, Enum, Ix) 
 
-
-
+-- | 
 mkWithin :: forall (n :: Nat). (KnownNat n) => Integer -> Maybe (Within n)
 mkWithin v = guard (1 <= v && v <= (natVal (Proxy :: Proxy n))) >> return (MkWithin v)
 
-
-
+-- |
 mkWithinMod :: forall (n :: Nat) . (KnownNat n) => Integer -> Within n
 mkWithinMod v = MkWithin v' 
   where nn = natVal (Proxy :: Proxy n)
@@ -102,12 +100,10 @@ instance (KnownNat n) => Num (Within n) where
   fromInteger a = mkWithinMod a
   negate (MkWithin a) = mkWithinMod (negate a)
 
-
-
+-- | 
 is1 :: Within n -> Bool 
 is1 (MkWithin v) = v == 1
-
-             
+        
 -- |
 data Permutation (n :: Nat) = Permutation { forward :: Array (Within n) (Within n)
                                           , backward :: Array (Within n)  (Within n) }
@@ -131,16 +127,6 @@ mkPermutation arr= runST action
                        maybe (left "not reversible") (\i -> lift (writeArray rarr' r i)) =<< lift (readArray rarr r)
                      return . Permutation arr =<< lift (freeze rarr')
 
-{- 
-newtype Permutation (n :: Nat) = Permutation { permmap :: RevArray }
-
-mkPermutation :: forall n. (KnownNat n) => RevArray -> Either String (Permutation n)
-mkPermutation revarr = if (1, natVal (Proxy :: Proxy n)) == bounds (forwardArray revarr)
-                           then Right (Permutation revarr) 
-                           else Left "interval mistmatch"
--}
-
-
  
 -- |
 permute :: Permutation n -> Within n -> Within n
@@ -151,52 +137,3 @@ invperm :: Permutation n -> Within n -> Within n
 invperm p i = backward p ! i
 
 
-{-
- 
-    case someNatVal (forwardArray (permmap p) ! (natVal i)) of 
-      Nothing -> error "impossible"
-      Just (SomeNat (prxy :: Proxy j)) -> let b = boolean (Proxy :: Proxy (F (1 <=? n))) in undefined 
-
-                                          undefined 
-
-class BooleanKindToType a where 
-  boolean :: a -> Bool 
-
-type family F (a :: Bool) :: * where
-  F True = ()
-  F False = ()
-
-instance BooleanKindToType (Proxy ()) where boolean _ = True
-
-instance BooleanKindToType (Proxy True) where
-  boolean _ = True
-
-instance BooleanKindToType (Proxy False) where
-  boolean _ = False
-
--}
-
--- MkNumberInIntervalBox (NumberInInterval prxy)
-
-{- 
- 
-class IsElemType x set where 
-  isElemType :: x -> set -> Bool
-
-
-instance (KnownNat n, KnownNat s, KnownNat e, s <= n, n <= e ) => IsElemType (Proxy n) (NatInterval s e) where
-  isElemType _ _ = True
-
-instance IsElemType (Proxy n) (NatInterval s e) where
-  isElemType _ _ = False
-
-
-
-
-
--- | 
-permuteBackward :: forall j n a b. (KnownNat n) => Permutation n -> XInInterval j 1 n -> Integer
-permuteBackward p (XInInterval j) = backwardArray (permmap p) ! (natVal j)
-
-
--}

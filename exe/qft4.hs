@@ -16,10 +16,6 @@ main = do
   print $ listFromInterval i1
   print $ listFromInterval i2
 
-  
-
   let ra = mkRegArray (11 `Cons` (12 `Cons` (13 `Cons` (14 `Cons` (15 `Cons` Nil)))))
-
-
-
-  print (ra ^! 7 )
+      two = NumberInInterval (Proxy :: Proxy 2) (mkNatInterval :: NatInterval 1 5)
+  print (ra ^! two )

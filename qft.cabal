@@ -58,8 +58,10 @@ Library
   Build-Depends:   base == 4.*,
                    array,
                    containers,
+                   either,
                    filepath,
                    -- hgal,
+                   mtl,
                    -- permutation,
                    process,
                    transformers

@@ -53,16 +53,14 @@ executable qft4
 
 Library
   hs-source-dirs: lib
-  ghc-options: 	-Wall -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-options: 	-Wall -Werror -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
   Build-Depends:   base == 4.*,
                    array,
                    containers,
                    either,
                    filepath,
-                   -- hgal,
                    mtl,
-                   -- permutation,
                    process,
                    singletons,
                    transformers

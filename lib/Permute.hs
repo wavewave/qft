@@ -1,17 +1,9 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE ExplicitForAll #-}
-{-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE IncoherentInstances #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverlappingInstances #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE UndecidableInstances #-}
 
 module Permute where
 
@@ -24,13 +16,12 @@ import Control.Monad.Trans.Either (runEitherT, left, hoistEither)
 import Data.Array
 import Data.Array.ST 
 import qualified Data.Foldable as F
-import Data.Promotion.Prelude
 import Data.Proxy
 
 
 guardEither :: String -> Bool -> Either String ()
 guardEither str False = Left str
-guardEither str True = Right ()
+guardEither _ True = Right ()
 
 maybeEither :: String -> Maybe a -> Either String a
 maybeEither str Nothing = Left str
@@ -53,7 +44,7 @@ instance (KnownNat n) => Num (Within n) where
   (MkWithin a) + (MkWithin b) = mkWithinMod (a+b)
   (MkWithin a) * (MkWithin b) = mkWithinMod (a*b)
   abs (MkWithin a) = mkWithinMod (abs a)
-  signum (MkWithin a) = MkWithin 1
+  signum (MkWithin _) = MkWithin 1
   fromInteger a = mkWithinMod a
   negate (MkWithin a) = mkWithinMod (negate a)
 

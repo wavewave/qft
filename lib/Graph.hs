@@ -1,15 +1,9 @@
 module Graph where
 
-import Control.Applicative
-import Control.Monad
-import Data.Function (on)
-import Data.List (nub, sort, sortBy, tails, lookup,group )
-import Data.Maybe (mapMaybe, fromJust)
--- import qualified Data.Permute as P
+import Data.List (nub, sort, sortBy )
 -- 
 import Permute
 -- 
-import Debug.Trace
 import Prelude hiding (lookup)
 
 

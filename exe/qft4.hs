@@ -15,3 +15,4 @@ main = do
                Left str -> error str
                Right x -> x  
   print (permute perm 1)
+  print (invperm perm 2)

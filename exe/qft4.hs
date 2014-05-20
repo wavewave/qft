@@ -4,7 +4,6 @@ module Main where
 
 import           Data.Array
 import           Data.Proxy
--- import           Unsafe.Coerce
 import           Permute
 
 
@@ -17,13 +16,6 @@ main = do
   print $ listFromInterval i1
   print $ listFromInterval i2
 
-{-
-  let ra = mkRegArray (11 `Cons` (12 `Cons` (13 `Cons` (14 `Cons` (15 `Cons` Nil)))))
-      two = NumberInInterval (Proxy :: Proxy 2) (mkNatInterval :: NatInterval 1 5)
-  print (ra ^! two )
--}
-
-
   let tarr = array (1,3) [(1,2),(2,3),(3,1)]
       rarr = case (mkRevArray tarr :: Either String RevArray) of
                Left str -> error str
@@ -31,10 +23,14 @@ main = do
      
   (print . backwardArray) rarr
 
-  let p = case (mkPermutation rarr :: Either String (Permutation 4)) of
+  let p = case (mkPermutation rarr :: Either String (Permutation 3)) of
             Left str -> error str
             Right x -> x 
-      intval = mkNatInterval :: RegInterval 4
+      intval = mkNatInterval :: RegInterval 3
   
-  print (permuteForward p (NumberInInterval (Proxy :: Proxy 1) intval))
+  print (permuteBackward p (XInInterval (Proxy :: Proxy 1)))
   
+
+  let b = isElemType (Proxy :: Proxy 1) intval :: Bool
+
+  print b

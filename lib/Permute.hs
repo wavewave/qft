@@ -1,10 +1,16 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE EmptyDataDecls #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE IncoherentInstances #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Permute where
 
@@ -17,6 +23,8 @@ import Data.Array
 import Data.Array.ST 
 import qualified Data.Foldable as F
 import Data.Proxy
+--
+import Unsafe.Coerce
 
 data NatInterval s e where 
   NatInterval :: forall s e n . (KnownNat s, KnownNat e, KnownNat n, (n+s) ~ (e+1)) => 
@@ -47,33 +55,14 @@ listFromInterval :: forall s e . (KnownNat s, KnownNat e) => NatInterval s e -> 
 listFromInterval (NatInterval n') = let n = natVal n'
                                     in take (fromInteger n) $ iterate succ (natVal (Proxy :: Proxy s)) 
 
-{- 
--- | 
-data Vector n a where
-   Nil :: Vector 0 a
-   Cons :: forall a n. a -> Vector n a -> Vector (n+1) a
-
--- |
-listFromVector :: Vector n a -> [a]
-listFromVector Nil = []
-listFromVector (x `Cons` xs) = x : listFromVector xs
-
--- |
-data RegArray n a = RArray (RegInterval n) (Array Integer a)
-
--- | 
-mkRegArray :: (KnownNat n) => Vector n a -> RegArray n a
-mkRegArray = let ix = mkNatInterval
-             in RArray ix . listArray (start ix, end ix) . listFromVector 
--}
+data XInInterval x s e where
+  XInInterval :: forall x s e . (KnownNat s, KnownNat e, KnownNat x, s <= x , x <= e) =>
+                 Proxy x -> XInInterval x s e
 
 
-data NumberInInterval x s e where
-  NumberInInterval :: forall x s e . (KnownNat s, KnownNat e, KnownNat x, s <= x , x <= e) =>
-                      Proxy x -> NatInterval s e -> NumberInInterval x s e
-
-
-data NumberInIntervalBox s e = forall x. MkNumberInIntervalBox (NumberInInterval x s e) 
+data XInIntervalBox (s :: Nat) (e :: Nat) where
+  MkXInIntervalBox :: forall x s e. (KnownNat s, KnownNat e, KnownNat x, s <= x, x <= e) => 
+                      XInInterval x s e -> XInIntervalBox s e
 
 -- | 
 data RevArray = RevArray { forwardArray :: Array Integer Integer
@@ -106,17 +95,40 @@ mkPermutation revarr = let intval = mkNatInterval :: RegInterval n
                           then Right (Permutation revarr) 
                           else Left "interval mistmatch"
 
+{- 
 -- |
-permuteForward :: forall i n a b. (KnownNat n) => Permutation n -> NumberInInterval i 1 n -> Integer
-permuteForward p (NumberInInterval i _) = forwardArray (permmap p) ! (natVal i)
+permuteForward :: forall i n a b.  
+                  Permutation n 
+               -> NumberInIntervalBox 1 n 
+               -> NumberInIntervalBox 1 n
+permuteForward p (MkNumberInIntervalBox (NumberInInterval i)) = 
+    case someNatVal (forwardArray (permmap p) ! (natVal i)) of 
+      Nothing -> error "impossible"
+      Just (SomeNat (prxy :: Proxy j)) -> MkNumberInIntervalBox (NumberInInterval prxy)
+-}
+
+type family F (a :: Nat) :: Nat where
+  F 0 = 1
+  F 1 = 2
+  F a = 3
+
+class IsElemType x set where 
+  isElemType :: x -> set -> Bool
+
+
+instance (KnownNat n, KnownNat s, KnownNat e, s <= n, n <= e ) => IsElemType (Proxy n) (NatInterval s e) where
+  isElemType _ _ = True
+
+instance IsElemType (Proxy n) (NatInterval s e) where
+  isElemType _ _ = False
+
+
+
+
 
 -- | 
-permuteBackward :: forall j n a b. (KnownNat n) => Permutation n -> NumberInInterval j 1 n -> Integer
-permuteBackward p (NumberInInterval j _) = backwardArray (permmap p) ! (natVal j)
-
-
-
-
+permuteBackward :: forall j n a b. (KnownNat n) => Permutation n -> XInInterval j 1 n -> Integer
+permuteBackward p (XInInterval j) = backwardArray (permmap p) ! (natVal j)
 
 
 

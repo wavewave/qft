@@ -64,6 +64,7 @@ Library
                    mtl,
                    -- permutation,
                    process,
+                   singletons,
                    transformers
   Exposed-Modules: 
                    -- OldTopology

@@ -29,7 +29,7 @@ main = do
                Left str -> error str
                Right x -> x  
   print (permute perm 1)
-  print (invperm perm 2)
+  print (permute (inverse perm) 2)
 
   print (map (permute perm) [ 1,2,3,4 ] )
 
@@ -42,3 +42,6 @@ main = do
     Just g1 -> do 
       print g1
       print (permuteGraph perm g1) 
+
+  let eop = mkOrderedPartition [ [ 1,2,3], [4], [5,6] ] :: Either String (OrderedPartition 6)
+  print eop

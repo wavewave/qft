@@ -81,7 +81,30 @@ permute :: Permutation n -> Within n -> Within n
 permute p i = forward p ! i
 
 -- | 
-invperm :: Permutation n -> Within n -> Within n
-invperm p i = backward p ! i
+inverse :: Permutation n -> Permutation n 
+inverse (Permutation f b) = Permutation b f
 
+-- |
+newtype OrderedPartition n = OP [ [Within n] ] 
+                           deriving Show
+
+mkOrderedPartition :: forall (n :: Nat) . (KnownNat n) => [ [ Within n ] ] -> Either String (OrderedPartition n)
+mkOrderedPartition lst = runST action
+  where nn = MkWithin (natVal (Proxy :: Proxy n))
+        action :: forall s. ST s (Either String (OrderedPartition n))        
+        action =   runEitherT $ do 
+                     rarr <- lift (newArray (1,nn) Nothing :: ST s (STArray s (Within n) (Maybe ())))
+                     F.forM_ (concat lst) $ \r -> do
+                       o <- lift (readArray rarr r)
+                       case o of
+                         Just _ -> left "not a partition"
+                         Nothing -> lift (writeArray rarr r (Just ()))
+                     F.forM_ [1..nn] $ \r -> 
+                       maybe (left "not a partition") (const (return ())) =<< lift (readArray rarr r)
+                     (return . OP) lst
+
+
+
+
+ 
 

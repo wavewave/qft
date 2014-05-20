@@ -16,3 +16,5 @@ main = do
                Right x -> x  
   print (permute perm 1)
   print (invperm perm 2)
+
+  print (map (permute perm) [ 1,2,3 ] )

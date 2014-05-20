@@ -26,59 +26,6 @@ module OldTopology
 , sortVertex
 ) where
 
-import Control.Applicative
-import Control.Monad
-import Data.Function (on)
-import Data.List (nub, sort, sortBy, tails, lookup,group )
-import Data.Maybe (mapMaybe, fromJust)
-import qualified Data.Permute as P
--- 
-import Debug.Trace
-import Prelude hiding (lookup)
-
-
-type Vertex = Int
-
-data UndirEdge = UndirEdge { edgeV1 :: Int
-                           , edgeV2 :: Int }
-               deriving (Show, Eq)
-
-verticesFromEdge :: UndirEdge -> [Int]
-verticesFromEdge (UndirEdge x y) = [x,y]
-
-isSelfish :: UndirEdge -> Bool
-isSelfish (UndirEdge x y) = x == y 
-
-edgecmp :: UndirEdge -> UndirEdge -> Ordering
-edgecmp (UndirEdge x1 x2) (UndirEdge y1 y2) = compare (x1,x2) (y1,y2)  
-
-mkUndirEdge :: Int -> Int -> UndirEdge 
-mkUndirEdge x y | x <= y = UndirEdge x y 
-                | otherwise = UndirEdge y x 
-
-data SortedVertices = SV { unSV :: [Vertex] }
-                    deriving (Show, Eq)
-
-mkSortedVertices :: [Int] -> SortedVertices 
-mkSortedVertices = SV . nub . sort 
-
-data SortedEdges = SE { unSE :: [UndirEdge] }
-                 deriving (Show, Eq)
-
-mkSortedEdges :: [UndirEdge] -> SortedEdges
-mkSortedEdges xs = SE (sortBy edgecmp xs) 
-
-data UndirGraph = UG { edges :: SortedEdges
-                     , vertices :: SortedVertices
-                     }
-                deriving (Show, Eq)
-
-mkUndirGraph :: [UndirEdge] -> [Vertex] -> Maybe UndirGraph
-mkUndirGraph es vs = 
-  let v1s = (concatMap verticesFromEdge) es
-      b = all (`elem` vs) v1s 
-  in if b then Just (UG (mkSortedEdges es) (mkSortedVertices vs)) else Nothing
-
 
 addVertex :: UndirGraph -> Vertex -> UndirGraph
 addVertex (UG (SE es) (SV vs)) v = let vs' = v : vs in UG (SE es) (mkSortedVertices vs')

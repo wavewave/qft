@@ -67,6 +67,7 @@ Library
                    singletons,
                    transformers
   Exposed-Modules: 
+                   Graph
                    -- OldTopology
                    -- OldTopology.PrettyPrint
                    Permute

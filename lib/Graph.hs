@@ -55,3 +55,9 @@ mkUndirGraph es vs =
       b = all (`elem` vs) v1s 
   in if b then Just (UG (mkSortedEdges es) (mkSortedVertices vs)) else Nothing
 
+
+permuteEdge :: Permutation n -> UndirEdge n -> UndirEdge n
+permuteEdge p (UndirEdge v1 v2) = mkUndirEdge (permute p v1) (permute p v2)
+
+permuteGraph :: Permutation n -> UndirGraph n -> UndirGraph n 
+permuteGraph p (UG (SE es) vs) = UG (mkSortedEdges (map (permuteEdge p) es)) vs

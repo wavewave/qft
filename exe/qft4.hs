@@ -86,7 +86,7 @@ main = do
 
   print (unSZ (locateInPartition e1 8))
 
-
+  print (splittingBy e1 8)
 {-
   let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
   case eop of 

@@ -2,10 +2,11 @@ module McKay where
 
 -- import           Control.Applicative
 import qualified Data.Foldable as F
+import           Data.List (delete)
 import qualified Data.Map as M
 import           Data.Maybe
 import           Data.Monoid ((<>))
-import           Data.Sequence (fromList)
+import           Data.Sequence (fromList, (<|), empty)
 --
 import           Data.Partition
 import           Data.SeqZipper
@@ -44,10 +45,9 @@ equitableRefinement asc optn = go optn
                  y:_ -> go y
 
 
-
 splittingBy :: OrderedPartition n -> Vertex n -> OrderedPartition n 
-splittingBy = undefined
-
-
+splittingBy ptn x = let SZ (oldpart, (ys,zs)) = locateInPartition ptn x
+                        newpart = [x] <| delete x oldpart <| empty 
+                    in OP (ys <> newpart <> zs)
  -- (replace xs vizip)
 

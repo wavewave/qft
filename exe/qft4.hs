@@ -47,8 +47,6 @@ main = do
   let asc = mkAssocMap g1
   print (map (degree asc [1,2]) [1,2,3,4])
 
-  let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
-  print eop
 
 
   let g2 :: UndirGraph 9
@@ -67,4 +65,23 @@ main = do
 
   print  g2
   let asc = mkAssocMap g2
-  print (shatteringBy asc [1,2,3,4,5,6,7,8,9] [1,2,3,4,5,6,7,8,9])
+  -- print (shatteringBy asc [1,2,3,4,5,6,7,8,9] [1,2,3,4,5,6,7,8,9])
+
+  putStrLn "Shattering test"
+  let test1 = shatter asc unitPartition
+  case test1 of
+    [] -> error "should not happen"  
+    test11:_ -> case test11 of
+                  [] -> print "finalstage"
+                  test12:_ -> do
+                    print test12
+                    print (shatter asc test12)
+
+{-
+  let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
+  case eop of 
+    Left err -> error err
+    Right op -> do
+      print opt
+      mapM_ print (shatter undefined op)
+-}

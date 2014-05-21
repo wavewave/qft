@@ -15,12 +15,12 @@ import           Control.Monad.Trans.Either (left, runEitherT)
 import           Data.Array.ST
 import qualified Data.Foldable as F
 import           Data.Proxy
-import           Data.Sequence (Seq, fromList)
+import           Data.Sequence (Seq, fromList, singleton)
 -- 
 import           Data.Within
 
 -- |
-newtype OrderedPartition n = OP (Seq [Within n])
+newtype OrderedPartition n = OP { getPartition :: Seq [Within n] }
                            deriving Show
 
 mkOrderedPartition :: forall (n :: Nat) . (KnownNat n) => [ [ Within n ] ] -> Either String (OrderedPartition n)
@@ -38,3 +38,6 @@ mkOrderedPartition lst = runST action
                        maybe (left "not a partition") (const (return ())) =<< lift (readArray rarr r)
                      (return . OP . fromList ) lst
 
+
+unitPartition :: forall n. (KnownNat n) => OrderedPartition n
+unitPartition = OP (singleton (interval (Proxy :: Proxy n)))

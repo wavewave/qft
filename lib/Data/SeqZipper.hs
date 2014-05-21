@@ -18,6 +18,9 @@ import Prelude hiding (zipWith, length, splitAt)
 -- | 
 type NonEmptyList a = (a,[a])
 
+-- | 
+type NonEmptySeq a = (a, Seq a)
+
 -- |
 newtype SeqZipper a = SZ { unSZ :: (a, (Seq a,Seq a)) } 
 
@@ -132,6 +135,9 @@ deleteCurrent (SZ (_,(xs,ys))) =
 
 fromNonEmptyList :: NonEmptyList a -> SeqZipper a 
 fromNonEmptyList (x,xs) = SZ (x, (empty,fromList xs) )
+
+fromNonEmptySeq :: NonEmptySeq a -> SeqZipper a
+fromNonEmptySeq (x,xs) = SZ (x, (empty,xs))
 
 
 toSeq :: SeqZipper a -> Seq a

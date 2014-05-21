@@ -13,12 +13,14 @@ import           Control.Applicative
 import           Control.Monad.ST
 import           Control.Monad.Trans (lift)
 import           Control.Monad.Trans.Either (left, runEitherT)
+import           Data.Array (listArray)
 import           Data.Array.ST
 import qualified Data.Foldable as F
 import           Data.Maybe
 import           Data.Proxy
 import           Data.Sequence (Seq, ViewL(..), viewl, fromList, singleton)
 -- 
+import           Data.Permute
 import           Data.SeqZipper
 import           Data.Within
 
@@ -46,9 +48,8 @@ unitPartition :: forall n. (KnownNat n) => OrderedPartition n
 unitPartition = OP (singleton (interval (Proxy :: Proxy n)))
 
 firstNontrivial :: OrderedPartition n -> Maybe (SeqZipper [Within n])
-firstNontrivial ptn = case (dropWhile ( ( == 1) . length . current ) . zippers) ptn of
-                        [] -> Nothing
-                        x:_ -> Just x 
+firstNontrivial = listToMaybe . dropWhile ( ( == 1) . length . current ) . zippers
+
 
 
 zippers :: OrderedPartition n -> [ SeqZipper [Within n] ]
@@ -61,3 +62,12 @@ locateInPartition :: OrderedPartition n -> Within n -> SeqZipper [Within n]
 locateInPartition ptn x = head (filter (p x) (zippers ptn))   -- this is guaranteed for ordered partition
   where p y z = y `elem` current z
 
+isDiscrete :: OrderedPartition n -> Bool 
+isDiscrete = all ((== 1) . length) . F.toList . getPartition
+
+discreteToPermutation :: (KnownNat n) => OrderedPartition n -> Maybe (Permutation n)
+discreteToPermutation ptn = if isDiscrete ptn 
+                            then case (mkPermutation . listArray (1,order ptn) . concat . F.toList . getPartition) ptn of 
+                                   Left err -> error err -- cannot happen. guaranteed by OrderedPartition
+                                   Right p -> Just p
+                            else Nothing

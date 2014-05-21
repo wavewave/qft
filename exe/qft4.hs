@@ -3,6 +3,7 @@
 module Main where
 
 import           Data.Array
+import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
 import           Data.Proxy
 import           Data.Sequence
@@ -119,4 +120,14 @@ main = do
   
 
   let testtree = createSearchTree asc 
+      testtree2 = fmap isDiscrete testtree
+      testtree3 = fmap discreteToPermutation testtree
+      -- lst = (catMaybes . fmap discreteToPermutation . flatten) testtree
+ 
   putStrLn (drawTree (fmap show testtree))
+  putStrLn (drawTree (fmap show testtree2))
+  putStrLn (drawTree (fmap show testtree3))
+
+  print (isomorphisms testtree)
+
+  

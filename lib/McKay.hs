@@ -12,6 +12,7 @@ import           Data.Sequence (fromList, (<|), empty)
 import           Data.Tree
 --
 import           Data.Partition
+import           Data.Permute
 import           Data.SeqZipper
 -- import           Data.Within  
 import Graph 
@@ -62,3 +63,6 @@ createSearchTree asc = worker unitPartition
         f y (SZ (c,_)) = Node y (map (worker . splittingBy y)  c)
 
    
+isomorphisms :: (KnownNat n) => SearchTree n -> [Permutation n]
+isomorphisms = catMaybes . fmap (fmap inverse . discreteToPermutation) . flatten
+

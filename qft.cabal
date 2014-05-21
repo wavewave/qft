@@ -68,6 +68,7 @@ Library
   Exposed-Modules: 
                    Data.SeqZipper
                    Graph
+                   McKay
                    -- OldTopology
                    -- OldTopology.PrettyPrint
                    Permute

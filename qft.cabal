@@ -19,15 +19,15 @@ executable qft1
   build-depends:       base == 4.* ,
                        qft
 
--- executable qft2
---   main-is:             qft2.hs
---   hs-source-dirs:      exe
---   ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
---   ghc-prof-options: -caf-all -auto-all
---   build-depends:       base == 4.* ,
---                        filepath,
---                        -- permutation,
---                        qft
+executable qft2
+   main-is:             qft2.hs
+   hs-source-dirs:      exe
+   ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+   ghc-prof-options: -caf-all -auto-all
+   build-depends:       base == 4.* ,
+                        filepath,
+                        unordered-containers,
+                        qft
 
 -- executable qft3
 --   main-is:             qft3.hs
@@ -61,10 +61,12 @@ Library
                    containers,
                    either,
                    filepath,
+                   hashable,
                    mtl,
                    process,
                    singletons,
-                   transformers
+                   transformers,
+                   unordered-containers
   Exposed-Modules: 
                    Data.Partition
                    Data.Permute
@@ -73,8 +75,10 @@ Library
                    Graph
                    McKay
                    -- OldTopology
-                   -- OldTopology.PrettyPrint
+                   OldTopology.PrettyPrint
                    Tensor
+                   Topology.Generate
                    Topology.PrettyPrint
+                   Util
   Other-Modules: 
 

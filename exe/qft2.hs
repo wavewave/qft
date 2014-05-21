@@ -1,69 +1,63 @@
+{-# LANGUAGE DataKinds #-}
+
 module Main where
 
-import           Control.Applicative
+-- import           Control.Applicative
 import qualified Data.Foldable as F (forM_) 
 import           Data.Function (on)
+import           Data.HashSet (insert,empty,size,toList)
 import           Data.List (nubBy, sortBy)
 import           Data.Maybe (fromJust)
 import qualified Data.Permute as P
 import           System.FilePath
 -- 
-import           OldTopology 
+import           Graph
+import           McKay
+-- import           OldTopology 
 import           OldTopology.PrettyPrint
-
-a = mkUndirEdge 1 2 
-
-b = mkUndirEdge 1 3
-
-c = mkUndirEdge 2 3
-
-d = mkUndirEdge 1 4
-
-elst = mkSortedEdges [a,b,c,d]
- 
-vlst = mkSortedVertices [1, 2, 3]
-
-vlst' = mkSortedVertices [1,4,7,11,22] 
-
-main' :: IO ()
-main' = do
-  let p = P.listPermute 4 [0,3,2,1] 
-      test = do g <- mkUndirGraph [a,d] [1,2,3,4]
-                let g1 = canonicalize g
-                g2 <- permute p g1 
-                let vo = (vertexOrder . getGraph) g2
-                let g3 = sortVertex g2
-                    vo' = (vertexOrder . getGraph) g3
-                return (vo,g2,g3,vo')
-  print test
-
-  -- return (g1,g2)
-  -- maybe (return ()) (\(g1,g2) -> print g1 >> print g2) test
-
+import           Topology.Generate
 
 
 main :: IO ()
 main = do 
   putStrLn "Topology test"
-  let mg0 = mkUndirGraph [] [1,7,9,11]
-  F.forM_ mg0 $ \g0 -> do
-    putStrLn "okay"
-    let gs = do 
-           g1 <- generate1EdgeMore g0
-           g2 <- generate1EdgeMore g1
-           g3 <- generate1EdgeMore g2
-           -- g4 <- generate1EdgeMore g3
-           (return . sortVertex . canonicalize) g3
+  let g0 :: UndirGraph 9
+      g0 = mkUndirGraph [ mkUndirEdge 1 2 
+                        , mkUndirEdge 2 3
+                        , mkUndirEdge 3 6
+                        , mkUndirEdge 6 9
+                        , mkUndirEdge 9 8
+                        , mkUndirEdge 8 7 
+                        , mkUndirEdge 7 4
+                        , mkUndirEdge 4 1
+                        , mkUndirEdge 2 5
+                        , mkUndirEdge 5 8
+                        , mkUndirEdge 4 5
+                        , mkUndirEdge 5 6 ]
 
-    let gs' = (map fst . nubBy ((==) `on` fst) . sortBy (flip compare `on` snd) . map ((,) <$> id <*> vertexOrder . getGraph)) gs 
+  let g1 :: UndirGraph 4
+      g1 = mkUndirGraph [ mkUndirEdge 1 2
+                        , mkUndirEdge 2 3
+                        , mkUndirEdge 3 4
+                        , mkUndirEdge 4 1]
 
-    -- mapM_ print gs
-    -- maybe (return ()) (\g' -> mapM_ print g') (mapM canonicalize gs)
+  let gs = (map canonicalLabel . generate1EdgeMore) g1
+      gs' = foldr insert empty gs 
+      gs'' = (foldr insert empty . map canonicalLabel . concatMap generate1EdgeMore . toList) gs'    
+  -- print (length gs'')
+  -- print (size gs')
 
-    let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
-        pairs= zip fnames (map (makeDotGraph . getGraph) gs')
 
-    mapM_ (\(x,y) -> writeFile x y >> runDot x) pairs
+  let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
+      pairs= (zip fnames . map makeDotGraph . toList) gs''
 
-    writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 
-    
+  mapM_ (\(x,y) -> writeFile x y >> runDot x) pairs
+
+  writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 
+
+      
+{-  
+  -- mapM_ print gs
+  -- maybe (return ()) (\g' -> mapM_ print g') (mapM canonicalize gs)
+
+-}    

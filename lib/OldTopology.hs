@@ -30,20 +30,6 @@ module OldTopology
 addVertex :: UndirGraph -> Vertex -> UndirGraph
 addVertex (UG (SE es) (SV vs)) v = let vs' = v : vs in UG (SE es) (mkSortedVertices vs')
 
-addEdge :: UndirGraph -> UndirEdge -> Maybe UndirGraph
-addEdge (UG (SE es) (SV vs)) e = let es' = e : es in mkUndirGraph es' vs
-
-pick2distinct :: SortedVertices -> [ UndirEdge ] 
-pick2distinct = filter (not . isSelfish) . pick2
-
-pick2 :: SortedVertices -> [ UndirEdge ] 
-pick2 (SV vs) = (map (uncurry UndirEdge) . concatMap f . tails) vs
-  where f :: [Vertex] -> [(Vertex,Vertex)] 
-        f [] = []
-        f lst@(x:xs) = map (x,) lst
-
-generate1EdgeMore :: UndirGraph -> [UndirGraph] 
-generate1EdgeMore gr = (mapMaybe (addEdge gr) . pick2 . vertices) gr
 
 
 newtype CanonicalUndirGraph = CanonicalUndirGraph { getGraph :: UndirGraph }

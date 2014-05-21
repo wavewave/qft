@@ -11,6 +11,7 @@ import GHC.TypeLits
 --
 import Control.Monad (guard)
 import Data.Array
+import Data.Hashable
 import Data.Proxy
 
 newtype Within (n :: Nat) = MkWithin Integer 
@@ -18,6 +19,9 @@ newtype Within (n :: Nat) = MkWithin Integer
 
 instance Show (Within n) where
   show (MkWithin i) = show i
+
+instance (KnownNat n) => Hashable (Within n) where
+  hashWithSalt salt (MkWithin x) = hashWithSalt salt (x,natVal (Proxy :: Proxy n))
 
 -- | 
 mkWithin :: forall (n :: Nat). (KnownNat n) => Integer -> Maybe (Within n)

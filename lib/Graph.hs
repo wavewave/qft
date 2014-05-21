@@ -1,30 +1,44 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
+
 module Graph where
 
-import Data.List (nub, sort, sortBy )
+import           GHC.TypeLits
 -- 
-import Permute
+import           Data.Array
+import           Data.Maybe (mapMaybe)
+import           Data.List (nub, sort, sortBy )
+import           Data.Proxy
+-- 
+import           Permute
 -- 
 import Prelude hiding (lookup)
 
 
 type Vertex n = Within n
 
-data UndirEdge n = UndirEdge { edgeV1 :: Within n
-                             , edgeV2 :: Within n }
+data UndirEdge n = UE { edgeV1 :: Vertex n
+                      , edgeV2 :: Vertex n }
                  deriving (Show, Eq)
 
-verticesFromEdge :: UndirEdge n -> [Within n]
-verticesFromEdge (UndirEdge x y) = [x,y]
+verticesFromEdge :: UndirEdge n -> [Vertex n]
+verticesFromEdge (UE x y) = [x,y]
 
 isSelfish :: UndirEdge n -> Bool
-isSelfish (UndirEdge x y) = x == y 
+isSelfish (UE x y) = x == y 
  
 edgecmp :: UndirEdge n -> UndirEdge n -> Ordering
-edgecmp (UndirEdge x1 x2) (UndirEdge y1 y2) = compare (x1,x2) (y1,y2)  
+edgecmp (UE x1 x2) (UE y1 y2) = compare (x1,x2) (y1,y2)  
 
-mkUndirEdge :: Within n -> Within n -> UndirEdge n 
-mkUndirEdge x y | x <= y = UndirEdge x y 
-                | otherwise = UndirEdge y x 
+mkUndirEdge :: Vertex n -> Vertex n -> UndirEdge n 
+mkUndirEdge x y | x <= y = UE x y 
+                | otherwise = UE y x 
+
+connectedVertex :: Vertex n -> UndirEdge n -> Maybe (Vertex n)
+connectedVertex v (UE x y) 
+    | v == x = Just y 
+    | v == y = Just x 
+    | otherwise = Nothing
 
 data SortedVertices n = SV { unSV :: [Vertex n] }
                       deriving (Show, Eq)
@@ -51,7 +65,33 @@ mkUndirGraph es vs =
 
 
 permuteEdge :: Permutation n -> UndirEdge n -> UndirEdge n
-permuteEdge p (UndirEdge v1 v2) = mkUndirEdge (permute p v1) (permute p v2)
+permuteEdge p (UE v1 v2) = mkUndirEdge (permute p v1) (permute p v2)
 
 permuteGraph :: Permutation n -> UndirGraph n -> UndirGraph n 
 permuteGraph p (UG (SE es) vs) = UG (mkSortedEdges (map (permuteEdge p) es)) vs
+
+
+class GetOrder a where
+  getOrder :: a -> Integer
+
+class GetMax a where
+  type ValueType a :: * 
+  getMax :: a -> ValueType a
+
+instance (KnownNat n) => GetOrder (UndirGraph n) where
+  getOrder (_ :: UndirGraph n) = natVal (Proxy :: Proxy n)
+
+instance (KnownNat n) => GetMax (UndirGraph n) where
+  type ValueType (UndirGraph n) = Vertex n
+  getMax _ = mkWithinMod (natVal (Proxy :: Proxy n))
+
+type AssocMap n = Array (Vertex n) [Vertex n]
+
+mkAssocMap :: (KnownNat n) => UndirGraph n -> AssocMap n
+mkAssocMap g@(UG (SE es) (SV vs)) = let alst = map (\v -> (v, mapMaybe (connectedVertex v) es)) vs
+                                    in array (1,getMax g) alst 
+ 
+degree :: AssocMap n -> [ Vertex n ] -> Vertex n -> Int
+degree arr ptn i = length (filter (`elem` ptn) (arr ! i))
+
+

@@ -44,6 +44,8 @@ main = do
     Just g1 -> do 
       print g1
       print (permuteGraph perm g1) 
+      let asc = mkAssocMap g1
+      print (map (degree asc [1,2]) [1,2,3,4])
 
   let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
   print eop

@@ -66,3 +66,9 @@ createSearchTree asc = worker unitPartition
 isomorphisms :: (KnownNat n) => SearchTree n -> [Permutation n]
 isomorphisms = catMaybes . fmap (fmap inverse . discreteToPermutation) . flatten
 
+canonicalLabel :: (KnownNat n) => UndirGraph n -> UndirGraph n
+canonicalLabel g = let asc = mkAssocMap g
+                       tree = createSearchTree asc
+                       isos = isomorphisms tree
+                   in permuteGraph (head isos) g  -- guaranteed to exist at list one
+

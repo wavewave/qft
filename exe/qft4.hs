@@ -130,4 +130,8 @@ main = do
 
   print (isomorphisms testtree)
 
+  mapM_ print $ map (flip permuteGraph g2) (isomorphisms testtree)
+  -- 
+  putStrLn "finally" 
+  print (canonicalLabel g2)
   

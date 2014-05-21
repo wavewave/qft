@@ -66,6 +66,7 @@ Library
                    singletons,
                    transformers
   Exposed-Modules: 
+                   Data.SeqZipper
                    Graph
                    -- OldTopology
                    -- OldTopology.PrettyPrint

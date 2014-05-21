@@ -21,8 +21,8 @@ shatteringBy arr vi vj = let resultmap = foldr f M.empty vj
     f x acc = let d = degree arr vi x
               in M.insertWith (\n o ->  n . o)  d (x:) acc 
 
-shatter :: AssocMap n -> OrderedPartition n -> [[OrderedPartition n]]
-shatter arr optn = map (\vizip -> mapMaybe (shatterwork vizip) ptnlst) zippers
+shatter :: AssocMap n -> OrderedPartition n -> [OrderedPartition n]
+shatter arr optn = concatMap (\vizip -> mapMaybe (shatterwork vizip) ptnlst) zippers
   where ptn = getPartition optn
         ptnlst = F.toList ptn
         ptn1 = case viewl ptn of
@@ -35,6 +35,14 @@ shatter arr optn = map (\vizip -> mapMaybe (shatterwork vizip) ptnlst) zippers
             _x:[] -> Nothing
             xs -> let SZ (_,(ys,zs)) = vizip 
                   in Just (OP (ys <> fromList xs <> zs))
+
+
+equitableRefinement :: AssocMap n -> OrderedPartition n -> OrderedPartition n 
+equitableRefinement asc optn = go optn
+  where go x = case shatter asc x of
+                 [] -> x
+                 y:_ -> go y
+
 
 
  -- (replace xs vizip)

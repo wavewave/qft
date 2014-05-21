@@ -69,13 +69,20 @@ main = do
 
   putStrLn "Shattering test"
   let test1 = shatter asc unitPartition
+  print test1
   case test1 of
-    [] -> error "should not happen"  
-    test11:_ -> case test11 of
-                  [] -> print "finalstage"
-                  test12:_ -> do
-                    print test12
-                    print (shatter asc test12)
+    test11:_ -> print (shatter asc test11)
+    _ -> print "nothing"
+
+  print (shatteringBy asc [1,3,7,9] [1,3,7,9])
+
+
+  putStrLn "Equitable refinement test"
+  let e1 = equitableRefinement asc unitPartition
+  print e1
+
+  print (equitableRefinement asc e1)
+
 
 {-
   let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)

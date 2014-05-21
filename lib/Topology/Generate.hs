@@ -29,3 +29,6 @@ pick2 = (map (uncurry UE) . concatMap f . tails) (interval (Proxy :: Proxy n))
 generate1EdgeMore :: (KnownNat n) => UndirGraph n -> [UndirGraph n] 
 generate1EdgeMore g = map (addEdge g) pick2
 
+generate1EdgeMore' :: (KnownNat n) => UndirGraph n -> [UndirGraph n] 
+generate1EdgeMore' g = map (addEdge g) pick2distinct
+

@@ -41,9 +41,9 @@ main = do
                         , mkUndirEdge 3 4
                         , mkUndirEdge 4 1]
 
-  let gs = (map canonicalLabel . generate1EdgeMore) g1
+  let gs = (map canonicalLabel . generate1EdgeMore') g1
       gs' = foldr insert empty gs 
-      gs'' = (foldr insert empty . map canonicalLabel . concatMap generate1EdgeMore . toList) gs'    
+      gs'' = (foldr insert empty . map canonicalLabel . concatMap generate1EdgeMore' . toList) gs'    
   -- print (length gs'')
   -- print (size gs')
 

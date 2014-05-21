@@ -86,7 +86,17 @@ main = do
 
   print (unSZ (locateInPartition e1 8))
 
-  print (splittingBy e1 8)
+  let r2 = splittingBy e1 1
+  print r2
+  putStrLn "next level"
+  -- mapM_ (print . unSZ) (zippers r2)
+  -- print (shatteringBy asc [2,4,6,8] [1])
+  let e2 = equitableRefinement asc r2
+  -- mapM_ print (shatter asc r2)
+  print e2
+
+  putStrLn "new test"
+  print ( shatteringBy asc [3,7,9] [6,8] )
 {-
   let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
   case eop of 

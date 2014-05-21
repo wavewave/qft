@@ -14,7 +14,10 @@ import Data.Array
 import Data.Proxy
 
 newtype Within (n :: Nat) = MkWithin Integer 
-                          deriving (Show, Eq, Ord, Enum, Ix) 
+                          deriving (Eq, Ord, Enum, Ix) 
+
+instance Show (Within n) where
+  show (MkWithin i) = show i
 
 -- | 
 mkWithin :: forall (n :: Nat). (KnownNat n) => Integer -> Maybe (Within n)

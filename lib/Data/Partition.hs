@@ -51,7 +51,7 @@ zippers (OP ptn) = (catMaybes . takeWhile (isJust) . iterate (moveRight =<<)) (p
                  EmptyL -> error "impossble" -- guaranteed from OrderedPartition and n >= 1
                  x :< xs -> fromNonEmptySeq (x,xs)
 
-
-
 locateInPartition :: OrderedPartition n -> Within n -> SeqZipper [Within n]
-locateInPartition = undefined -- ptn x = undefined -- (x `elem`)  
+locateInPartition ptn x = head (filter (p x) (zippers ptn))   -- this is guaranteed for ordered partition
+  where p y z = y `elem` current z
+

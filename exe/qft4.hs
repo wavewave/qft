@@ -9,6 +9,7 @@ import           Data.Sequence
 --
 import           Data.Partition
 import           Data.Permute
+import           Data.SeqZipper
 import           Data.Within
 import           Graph
 import           McKay
@@ -82,6 +83,8 @@ main = do
   print e1
 
   print (equitableRefinement asc e1)
+
+  print (unSZ (locateInPartition e1 8))
 
 
 {-

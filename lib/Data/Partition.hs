@@ -9,14 +9,17 @@ module Data.Partition where
 
 import GHC.TypeLits
 -- 
+import           Control.Applicative
 import           Control.Monad.ST
 import           Control.Monad.Trans (lift)
 import           Control.Monad.Trans.Either (left, runEitherT)
 import           Data.Array.ST
 import qualified Data.Foldable as F
+import           Data.Maybe
 import           Data.Proxy
-import           Data.Sequence (Seq, fromList, singleton)
+import           Data.Sequence (Seq, ViewL(..), viewl, fromList, singleton)
 -- 
+import           Data.SeqZipper
 import           Data.Within
 
 -- |
@@ -25,7 +28,7 @@ newtype OrderedPartition n = OP { getPartition :: Seq [Within n] }
 
 mkOrderedPartition :: forall (n :: Nat) . (KnownNat n) => [ [ Within n ] ] -> Either String (OrderedPartition n)
 mkOrderedPartition lst = runST action
-  where nn = MkWithin (natVal (Proxy :: Proxy n))
+  where nn = order (Proxy :: Proxy n)
         action :: forall s. ST s (Either String (OrderedPartition n))        
         action =   runEitherT $ do 
                      rarr <- lift (newArray (1,nn) Nothing :: ST s (STArray s (Within n) (Maybe ())))
@@ -41,3 +44,14 @@ mkOrderedPartition lst = runST action
 
 unitPartition :: forall n. (KnownNat n) => OrderedPartition n
 unitPartition = OP (singleton (interval (Proxy :: Proxy n)))
+
+zippers :: OrderedPartition n -> [ SeqZipper [Within n] ]
+zippers (OP ptn) = (catMaybes . takeWhile (isJust) . iterate (moveRight =<<)) (pure ptn1)
+  where ptn1 = case viewl ptn of
+                 EmptyL -> error "impossble" -- guaranteed from OrderedPartition and n >= 1
+                 x :< xs -> fromNonEmptySeq (x,xs)
+
+
+
+locateInPartition :: OrderedPartition n -> Within n -> SeqZipper [Within n]
+locateInPartition = undefined -- ptn x = undefined -- (x `elem`)  

@@ -1,11 +1,11 @@
 module McKay where
 
-import           Control.Applicative
+-- import           Control.Applicative
 import qualified Data.Foldable as F
 import qualified Data.Map as M
 import           Data.Maybe
 import           Data.Monoid ((<>))
-import           Data.Sequence (ViewL(..), viewl,fromList)
+import           Data.Sequence (fromList)
 --
 import           Data.Partition
 import           Data.SeqZipper
@@ -22,13 +22,13 @@ shatteringBy arr vi vj = let resultmap = foldr f M.empty vj
               in M.insertWith (\n o ->  n . o)  d (x:) acc 
 
 shatter :: AssocMap n -> OrderedPartition n -> [OrderedPartition n]
-shatter arr optn = concatMap (\vizip -> mapMaybe (shatterwork vizip) ptnlst) zippers
+shatter arr optn = concatMap (\vizip -> mapMaybe (shatterwork vizip) ptnlst) (zippers optn)
   where ptn = getPartition optn
         ptnlst = F.toList ptn
-        ptn1 = case viewl ptn of
-                 EmptyL -> error "impossble" -- guaranteed from OrderedPartition and n >= 1
-                 x :< xs -> fromNonEmptySeq (x,xs)
-        zippers = (catMaybes . takeWhile (isJust) . iterate (moveRight =<<)) (pure ptn1)
+        -- ptn1 = case viewl ptn of
+        --          EmptyL -> error "impossble" -- guaranteed from OrderedPartition and n >= 1
+        --          x :< xs -> fromNonEmptySeq (x,xs)
+        -- zippers = (catMaybes . takeWhile (isJust) . iterate (moveRight =<<)) (pure ptn1)
         shatterwork vizip vj = 
           case shatteringBy arr (current vizip) vj of
             [] -> error "empty partition?"  -- this is errored case but guaranteed not exist
@@ -43,6 +43,10 @@ equitableRefinement asc optn = go optn
                  [] -> x
                  y:_ -> go y
 
+
+
+splittingBy :: OrderedPartition n -> Vertex n -> OrderedPartition n 
+splittingBy = undefined
 
 
  -- (replace xs vizip)

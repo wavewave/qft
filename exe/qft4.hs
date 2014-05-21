@@ -3,7 +3,9 @@
 module Main where
 
 import           Data.Array
+import           Data.Monoid ((<>))
 import           Data.Proxy
+import           Data.Sequence
 --
 import           Graph
 import           Permute
@@ -43,5 +45,5 @@ main = do
       print g1
       print (permuteGraph perm g1) 
 
-  let eop = mkOrderedPartition [ [ 1,2,3], [4], [5,6] ] :: Either String (OrderedPartition 6)
+  let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
   print eop

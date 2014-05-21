@@ -16,8 +16,10 @@ import Control.Monad.Trans.Either (runEitherT, left, hoistEither)
 import Data.Array
 import Data.Array.ST 
 import qualified Data.Foldable as F
+-- import qualified Data.Monoid as M
 import Data.Proxy
-
+import Data.Sequence (Seq,fromList)
+-- 
 
 guardEither :: String -> Bool -> Either String ()
 guardEither str False = Left str
@@ -85,7 +87,7 @@ inverse :: Permutation n -> Permutation n
 inverse (Permutation f b) = Permutation b f
 
 -- |
-newtype OrderedPartition n = OP [ [Within n] ] 
+newtype OrderedPartition n = OP (Seq [Within n])
                            deriving Show
 
 mkOrderedPartition :: forall (n :: Nat) . (KnownNat n) => [ [ Within n ] ] -> Either String (OrderedPartition n)
@@ -101,7 +103,7 @@ mkOrderedPartition lst = runST action
                          Nothing -> lift (writeArray rarr r (Just ()))
                      F.forM_ [1..nn] $ \r -> 
                        maybe (left "not a partition") (const (return ())) =<< lift (readArray rarr r)
-                     (return . OP) lst
+                     (return . OP . fromList ) lst
 
 
 

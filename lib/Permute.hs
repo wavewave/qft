@@ -50,9 +50,17 @@ instance (KnownNat n) => Num (Within n) where
   fromInteger a = mkWithinMod a
   negate (MkWithin a) = mkWithinMod (negate a)
 
+interval :: forall p n. (KnownNat n) => p n -> [Within n]
+interval x = [1..order x]
+
+order :: forall p n. (KnownNat n) => p n -> Within n
+order _ = let nn = natVal (Proxy :: Proxy n) in mkWithinMod nn
+
+{-
 -- | 
 is1 :: Within n -> Bool 
 is1 (MkWithin v) = v == 1
+-}
         
 -- |
 data Permutation (n :: Nat) = Permutation { forward :: Array (Within n) (Within n)
@@ -64,7 +72,7 @@ mkPermutation arr= runST action
   where action :: forall s. ST s (Either String (Permutation n))        
         action =   runEitherT $ do 
                      let (i1,i2) = bounds arr
-                     hoistEither (guardEither "i1 is not 1" (is1 i1))
+                     hoistEither (guardEither "i1 is not 1" (i1 == 1))
                      rarr <- lift (newArray (i1,i2) Nothing :: ST s (STArray s (Within n) (Maybe (Within n))))
                      rarr' <- lift (newArray_ (i1,i2) :: ST s (STArray s (Within n) (Within n)))
                      F.forM_ [i1..i2] $ \i -> do

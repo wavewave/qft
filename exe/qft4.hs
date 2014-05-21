@@ -37,38 +37,32 @@ main = do
   print (map (permute perm) [ 1,2,3,4 ] )
 
 
-  let mg1 :: Maybe (UndirGraph 4)
-      mg1 = mkUndirGraph [a,d] [1,2,3,4]
+  let g1 :: UndirGraph 4
+      g1 = mkUndirGraph [a,d] 
 
-  case mg1 of 
-    Nothing -> return ()
-    Just g1 -> do 
-      print g1
-      print (permuteGraph perm g1) 
-      let asc = mkAssocMap g1
-      print (map (degree asc [1,2]) [1,2,3,4])
+  print g1
+  print (permuteGraph perm g1) 
+  let asc = mkAssocMap g1
+  print (map (degree asc [1,2]) [1,2,3,4])
 
   let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
   print eop
 
 
-  let mg2 :: Maybe (UndirGraph 9)
-      mg2 = mkUndirGraph [ mkUndirEdge 1 2 
-                         , mkUndirEdge 2 3
-                         , mkUndirEdge 3 6
-                         , mkUndirEdge 6 9
-                         , mkUndirEdge 9 8
-                         , mkUndirEdge 8 7 
-                         , mkUndirEdge 7 4
-                         , mkUndirEdge 4 1
-                         , mkUndirEdge 2 5
-                         , mkUndirEdge 5 8
-                         , mkUndirEdge 4 5
-                         , mkUndirEdge 5 6 ]
-                         [ 1,2,3,4,5,6,7,8,9 ]
-  case mg2 of 
-    Nothing -> return ()
-    Just g2 -> do
-      print  g2
-      let asc = mkAssocMap g2
-      print (shatteringBy asc [1,2,3,4,5,6,7,8,9] [1,2,3,4,5,6,7,8,9])
+  let g2 :: UndirGraph 9
+      g2 = mkUndirGraph [ mkUndirEdge 1 2 
+                        , mkUndirEdge 2 3
+                        , mkUndirEdge 3 6
+                        , mkUndirEdge 6 9
+                        , mkUndirEdge 9 8
+                        , mkUndirEdge 8 7 
+                        , mkUndirEdge 7 4
+                        , mkUndirEdge 4 1
+                        , mkUndirEdge 2 5
+                        , mkUndirEdge 5 8
+                        , mkUndirEdge 4 5
+                        , mkUndirEdge 5 6 ]
+
+  print  g2
+  let asc = mkAssocMap g2
+  print (shatteringBy asc [1,2,3,4,5,6,7,8,9] [1,2,3,4,5,6,7,8,9])

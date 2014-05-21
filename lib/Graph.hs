@@ -7,8 +7,8 @@ import           GHC.TypeLits
 -- 
 import           Data.Array
 import           Data.Maybe (mapMaybe)
-import           Data.List (nub, sort, sortBy )
-import           Data.Proxy
+import           Data.List (sortBy )
+-- import           Data.Proxy
 -- 
 import           Permute
 -- 
@@ -40,11 +40,13 @@ connectedVertex v (UE x y)
     | v == y = Just x 
     | otherwise = Nothing
 
+{- 
 data SortedVertices n = SV { unSV :: [Vertex n] }
                       deriving (Show, Eq)
 
 mkSortedVertices :: [Vertex n] -> SortedVertices n
 mkSortedVertices = SV . nub . sort 
+-}
 
 data SortedEdges n = SE { unSE :: [UndirEdge n] }
                    deriving (Show, Eq)
@@ -52,25 +54,27 @@ data SortedEdges n = SE { unSE :: [UndirEdge n] }
 mkSortedEdges :: [UndirEdge n] -> SortedEdges n
 mkSortedEdges xs = SE (sortBy edgecmp xs) 
 
-data UndirGraph n = UG { edges :: SortedEdges n
-                       , vertices :: SortedVertices n
-                       }
+newtype UndirGraph n = UG { edges :: SortedEdges n }
+--                       , vertices :: SortedVertices }
                 deriving (Show, Eq)
 
-mkUndirGraph :: [UndirEdge n] -> [Vertex n] -> Maybe (UndirGraph n)
-mkUndirGraph es vs = 
+mkUndirGraph :: [UndirEdge n] {- -> [Vertex n] -> -} -> UndirGraph n
+mkUndirGraph es {- vs -} = UG (mkSortedEdges es)
+{-
   let v1s = (concatMap verticesFromEdge) es
       b = all (`elem` vs) v1s 
   in if b then Just (UG (mkSortedEdges es) (mkSortedVertices vs)) else Nothing
-
+-}
 
 permuteEdge :: Permutation n -> UndirEdge n -> UndirEdge n
 permuteEdge p (UE v1 v2) = mkUndirEdge (permute p v1) (permute p v2)
 
 permuteGraph :: Permutation n -> UndirGraph n -> UndirGraph n 
-permuteGraph p (UG (SE es) vs) = UG (mkSortedEdges (map (permuteEdge p) es)) vs
+permuteGraph p (UG (SE es)) = UG (mkSortedEdges (map (permuteEdge p) es)) 
 
 
+
+{-
 class GetOrder a where
   getOrder :: a -> Integer
 
@@ -84,12 +88,13 @@ instance (KnownNat n) => GetOrder (UndirGraph n) where
 instance (KnownNat n) => GetMax (UndirGraph n) where
   type ValueType (UndirGraph n) = Vertex n
   getMax _ = mkWithinMod (natVal (Proxy :: Proxy n))
+-}
 
 type AssocMap n = Array (Vertex n) [Vertex n]
 
 mkAssocMap :: (KnownNat n) => UndirGraph n -> AssocMap n
-mkAssocMap g@(UG (SE es) (SV vs)) = let alst = map (\v -> (v, mapMaybe (connectedVertex v) es)) vs
-                                    in array (1,getMax g) alst 
+mkAssocMap g@(UG (SE es)) = let alst = map (\v -> (v, mapMaybe (connectedVertex v) es)) (interval g)
+                                    in array (1,order g) alst 
  
 degree :: AssocMap n -> [ Vertex n ] -> Vertex n -> Int
 degree arr ptn i = length (filter (`elem` ptn) (arr ! i))

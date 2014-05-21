@@ -5,11 +5,11 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Permute where
+module Data.Permute where
 
 import GHC.TypeLits
 -- 
-import Control.Monad (guard)
+
 import Control.Monad.ST (ST, runST)
 import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Either (runEitherT, left, hoistEither)
@@ -17,9 +17,9 @@ import Data.Array
 import Data.Array.ST 
 import qualified Data.Foldable as F
 -- import qualified Data.Monoid as M
-import Data.Proxy
-import Data.Sequence (Seq,fromList)
+
 -- 
+import Data.Within
 
 guardEither :: String -> Bool -> Either String ()
 guardEither str False = Left str
@@ -28,35 +28,6 @@ guardEither _ True = Right ()
 maybeEither :: String -> Maybe a -> Either String a
 maybeEither str Nothing = Left str
 maybeEither _ (Just x) = Right x
-
-newtype Within (n :: Nat) = MkWithin Integer 
-                          deriving (Show, Eq, Ord, Enum, Ix) 
-
--- | 
-mkWithin :: forall (n :: Nat). (KnownNat n) => Integer -> Maybe (Within n)
-mkWithin v = guard (1 <= v && v <= (natVal (Proxy :: Proxy n))) >> return (MkWithin v)
-
--- |
-mkWithinMod :: forall (n :: Nat) . (KnownNat n) => Integer -> Within n
-mkWithinMod v = MkWithin v' 
-  where nn = natVal (Proxy :: Proxy n)
-        v' = let x = v `mod` nn in if x == 0 then nn else x
-
-instance (KnownNat n) => Num (Within n) where
-  (MkWithin a) + (MkWithin b) = mkWithinMod (a+b)
-  (MkWithin a) * (MkWithin b) = mkWithinMod (a*b)
-  abs (MkWithin a) = mkWithinMod (abs a)
-  signum (MkWithin _) = MkWithin 1
-  fromInteger a = mkWithinMod a
-  negate (MkWithin a) = mkWithinMod (negate a)
-
--- |
-interval :: forall p n. (KnownNat n) => p n -> [Within n]
-interval x = [1..order x]
-
--- |
-order :: forall p n. (KnownNat n) => p n -> Within n
-order _ = let nn = natVal (Proxy :: Proxy n) in mkWithinMod nn
 
         
 -- |
@@ -90,28 +61,4 @@ permute p i = forward p ! i
 -- | 
 inverse :: Permutation n -> Permutation n 
 inverse (Permutation f b) = Permutation b f
-
--- |
-newtype OrderedPartition n = OP (Seq [Within n])
-                           deriving Show
-
-mkOrderedPartition :: forall (n :: Nat) . (KnownNat n) => [ [ Within n ] ] -> Either String (OrderedPartition n)
-mkOrderedPartition lst = runST action
-  where nn = MkWithin (natVal (Proxy :: Proxy n))
-        action :: forall s. ST s (Either String (OrderedPartition n))        
-        action =   runEitherT $ do 
-                     rarr <- lift (newArray (1,nn) Nothing :: ST s (STArray s (Within n) (Maybe ())))
-                     F.forM_ (concat lst) $ \r -> do
-                       o <- lift (readArray rarr r)
-                       case o of
-                         Just _ -> left "not a partition"
-                         Nothing -> lift (writeArray rarr r (Just ()))
-                     F.forM_ [1..nn] $ \r -> 
-                       maybe (left "not a partition") (const (return ())) =<< lift (readArray rarr r)
-                     (return . OP . fromList ) lst
-
-
-
-
- 
 

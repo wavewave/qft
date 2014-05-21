@@ -7,9 +7,11 @@ import           Data.Monoid ((<>))
 import           Data.Proxy
 import           Data.Sequence
 --
+import           Data.Partition
+import           Data.Permute
+import           Data.Within
 import           Graph
 import           McKay
-import           Permute
 
 a :: UndirEdge 4
 a = mkUndirEdge 1 2 

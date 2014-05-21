@@ -9,7 +9,8 @@ import           Data.Array
 import           Data.Maybe (mapMaybe)
 import           Data.List (sortBy )
 -- 
-import           Permute
+import           Data.Permute
+import           Data.Within
 -- 
 import Prelude hiding (lookup)
 

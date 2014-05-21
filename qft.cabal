@@ -66,12 +66,14 @@ Library
                    singletons,
                    transformers
   Exposed-Modules: 
+                   Data.Partition
+                   Data.Permute
                    Data.SeqZipper
+                   Data.Within
                    Graph
                    McKay
                    -- OldTopology
                    -- OldTopology.PrettyPrint
-                   Permute
                    Tensor
                    Topology.PrettyPrint
   Other-Modules: 

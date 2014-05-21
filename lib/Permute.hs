@@ -50,17 +50,14 @@ instance (KnownNat n) => Num (Within n) where
   fromInteger a = mkWithinMod a
   negate (MkWithin a) = mkWithinMod (negate a)
 
+-- |
 interval :: forall p n. (KnownNat n) => p n -> [Within n]
 interval x = [1..order x]
 
+-- |
 order :: forall p n. (KnownNat n) => p n -> Within n
 order _ = let nn = natVal (Proxy :: Proxy n) in mkWithinMod nn
 
-{-
--- | 
-is1 :: Within n -> Bool 
-is1 (MkWithin v) = v == 1
--}
         
 -- |
 data Permutation (n :: Nat) = Permutation { forward :: Array (Within n) (Within n)

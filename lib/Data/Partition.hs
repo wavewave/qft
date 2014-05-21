@@ -45,6 +45,12 @@ mkOrderedPartition lst = runST action
 unitPartition :: forall n. (KnownNat n) => OrderedPartition n
 unitPartition = OP (singleton (interval (Proxy :: Proxy n)))
 
+firstNontrivial :: OrderedPartition n -> Maybe (SeqZipper [Within n])
+firstNontrivial ptn = case (dropWhile ( ( == 1) . length . current ) . zippers) ptn of
+                        [] -> Nothing
+                        x:_ -> Just x 
+
+
 zippers :: OrderedPartition n -> [ SeqZipper [Within n] ]
 zippers (OP ptn) = (catMaybes . takeWhile (isJust) . iterate (moveRight =<<)) (pure ptn1)
   where ptn1 = case viewl ptn of

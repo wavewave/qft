@@ -6,6 +6,7 @@ import           Data.Array
 import           Data.Monoid ((<>))
 import           Data.Proxy
 import           Data.Sequence
+import           Data.Tree
 --
 import           Data.Partition
 import           Data.Permute
@@ -94,9 +95,18 @@ main = do
   let e2 = equitableRefinement asc r2
   -- mapM_ print (shatter asc r2)
   print e2
+  print (fmap unSZ (firstNontrivial e2))
 
-  putStrLn "new test"
-  print ( shatteringBy asc [3,7,9] [6,8] )
+  
+  let r3 = splittingBy e2 3
+      e3 = equitableRefinement asc r3
+  print e3 
+  print (fmap unSZ (firstNontrivial e3))
+
+  
+
+  -- putStrLn "new test"
+  -- print ( shatteringBy asc [3,7,9] [6,8] )
 {-
   let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
   case eop of 
@@ -105,3 +115,8 @@ main = do
       print opt
       mapM_ print (shatter undefined op)
 -}
+
+  
+
+  let testtree = createSearchTree asc 
+  putStrLn (drawTree (fmap show testtree))

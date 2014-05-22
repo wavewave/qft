@@ -1,10 +1,9 @@
-module OldTopology.PrettyPrint where
+module Topology.PrettyPrint where
 
 import Data.List (intercalate)
 import System.FilePath ( (<.>), dropExtension )
 import System.Process
 --
--- import OldTopology 
 import Graph
 
 

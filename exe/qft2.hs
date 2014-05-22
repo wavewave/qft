@@ -13,10 +13,8 @@ import           System.FilePath
 -- 
 import           Graph
 import           McKay
--- import           OldTopology 
-import           OldTopology.PrettyPrint
 import           Topology.Generate
-
+import           Topology.PrettyPrint
 
 main :: IO ()
 main = do 

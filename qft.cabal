@@ -74,11 +74,9 @@ Library
                    Data.Within
                    Graph
                    McKay
-                   -- OldTopology
-                   OldTopology.PrettyPrint
                    Tensor
                    Topology.Generate
-                   -- Topology.PrettyPrint
+                   Topology.PrettyPrint
                    Util
   Other-Modules: 
 

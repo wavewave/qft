@@ -76,16 +76,16 @@ vertexCandidates vkinds asc = (mapMaybe f . H.toList) vkinds
               in (\y->(x,snd y)) <$> mx
 
 -- |
-inverseCandidates :: (KnownNat n) => [ (VertexKind, [Vertex n]) ] -> [ (Vertex n, [VertexKind])  ]
-inverseCandidates olst = let lst1 = [ (k,v) | (k,vs) <- olst, v <- vs ] 
-                             f (k,v) = M.insertWith (.) v (k:) 
-                             map2 = foldr f M.empty lst1 
-                         in (M.toAscList . fmap ((flip ($) []) )) map2 
+transpose :: (Eq a, Eq b, Ord a, Ord b) => [ (a, [b]) ] -> [ (b, [a])  ]
+transpose olst = let lst1 = [ (k,v) | (k,vs) <- olst, v <- vs ] 
+                     f (k,v) = M.insertWith (.) v (k:) 
+                     map2 = foldr f M.empty lst1 
+                 in (M.toAscList . fmap ((flip ($) []) )) map2 
 
 
 generateVertexMapping :: (KnownNat n) => VertexKindSet -> AssocMap n -> [ [ (Vertex n, VertexKind) ] ] -- -> [ Map (Within n) String ] 
 generateVertexMapping vkinds asc = sequenceA vks
-  where vc = inverseCandidates (vertexCandidates vkinds asc)
+  where vc = transpose (vertexCandidates vkinds asc)
         f (v,ks) = [(v,k)| k <- ks ] 
         vks = map f vc
 

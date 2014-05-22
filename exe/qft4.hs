@@ -136,7 +136,7 @@ main = do
       vtype3c = VK 3 "c" [(1,U,3)]
       vtype3d = VK 3 "d" [(2,U,3)]
       -- vtype4 = VK 4 "d" [(1,U,4)]
-      vtypes = H.fromList [vtype1a,vtype1j,vtype3c] -- [vtype1,vtype2,vtype3,vtype4]
+      vtypes = H.fromList [vtype1a,vtype1j,vtype3c ] -- [vtype1,vtype2,vtype3,vtype4]
  
   print (isCompatibleWith vtypes asc)
 
@@ -160,8 +160,8 @@ main = do
   putStrLn "vertex candidate"
   let vc = vertexCandidates vtypes myasc
   mapM_ print vc
-  putStrLn "inverse vertex candidate"
-  mapM_ print (inverseCandidates vc)
+  -- putStrLn "inverse vertex candidate"
+  -- mapM_ print (inverseCandidates vc)
   putStrLn "next test"
   let vmap = generateVertexMapping vtypes myasc
   mapM_ print vmap
@@ -174,8 +174,8 @@ main = do
                      vm <- generateVertexMapping vtypes am
                      let nm = vertexMapToString vm
                      return (nm,g)
- 
-
+  return ()
+  {-
   putStrLn "printing graphs"
   
   let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
@@ -188,4 +188,4 @@ main = do
   readProcess "pdflatex" [ "test.tex" ] ""
 
   return ()
-  
+  -}

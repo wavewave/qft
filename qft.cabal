@@ -78,7 +78,7 @@ Library
                    OldTopology.PrettyPrint
                    Tensor
                    Topology.Generate
-                   Topology.PrettyPrint
+                   -- Topology.PrettyPrint
                    Util
   Other-Modules: 
 

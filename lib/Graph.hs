@@ -85,8 +85,8 @@ type AssocMap n = Array (Vertex n) [Vertex n]
 
 -- |
 mkAssocMap :: (KnownNat n) => UndirGraph n -> AssocMap n
-mkAssocMap g@(UG (SE es)) = let alst = map (\v -> (v, mapMaybe (connectedVertex v) es)) (interval g)
-                                    in array (1,order g) alst 
+mkAssocMap (UG (SE es)) = let alst = map (\v -> (v, mapMaybe (connectedVertex v) es)) interval 
+                          in array (1,order) alst 
 
 -- | 
 degree :: AssocMap n -> [ Vertex n ] -> Vertex n -> Int

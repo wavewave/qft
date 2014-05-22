@@ -9,7 +9,6 @@ import           Data.List (delete)
 import qualified Data.Map as M
 import           Data.Maybe
 import           Data.Monoid ((<>))
-import           Data.Proxy
 import           Data.Sequence (fromList, (<|), empty)
 import           Data.Tree
 --
@@ -31,7 +30,7 @@ shatteringBy arr vi vj = let resultmap = foldr f M.empty vi
 -- |
 globalVertexDegree :: forall n. (KnownNat n) => AssocMap n -> [ (Int, [Vertex n] ) ]
 globalVertexDegree arr = map deg (shatteringBy arr u u)
-  where u = interval (Proxy :: Proxy n)
+  where u = interval
         deg vs = let v = head vs -- we know that this is safe as a result of shatteringBy 
                  in (degree arr u v, vs)
 

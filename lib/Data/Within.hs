@@ -42,10 +42,10 @@ instance (KnownNat n) => Num (Within n) where
   negate (MkWithin a) = mkWithinMod (negate a)
 
 -- |
-interval :: forall p n. (KnownNat n) => p n -> [Within n]
-interval x = [1..order x]
+interval :: (KnownNat n) => [Within n] -- forall p n. (KnownNat n) => p n -> [Within n]
+interval = [1..order]
 
 -- |
-order :: forall p n. (KnownNat n) => p n -> Within n
-order _ = let nn = natVal (Proxy :: Proxy n) in mkWithinMod nn
+order :: forall n. (KnownNat n) => Within n -- forall p n. (KnownNat n) => p n -> Within n
+order = let nn = natVal (Proxy :: Proxy n) in mkWithinMod nn
 

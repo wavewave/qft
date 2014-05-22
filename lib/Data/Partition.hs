@@ -17,7 +17,6 @@ import           Data.Array (listArray)
 import           Data.Array.ST
 import qualified Data.Foldable as F
 import           Data.Maybe
-import           Data.Proxy
 import           Data.Sequence (Seq, ViewL(..), viewl, fromList, singleton)
 -- 
 import           Data.Permute
@@ -30,7 +29,7 @@ newtype OrderedPartition n = OP { getPartition :: Seq [Within n] }
 
 mkOrderedPartition :: forall (n :: Nat) . (KnownNat n) => [ [ Within n ] ] -> Either String (OrderedPartition n)
 mkOrderedPartition lst = runST action
-  where nn = order (Proxy :: Proxy n)
+  where nn = order 
         action :: forall s. ST s (Either String (OrderedPartition n))        
         action =   runEitherT $ do 
                      rarr <- lift (newArray (1,nn) Nothing :: ST s (STArray s (Within n) (Maybe ())))
@@ -45,7 +44,7 @@ mkOrderedPartition lst = runST action
 
 
 unitPartition :: forall n. (KnownNat n) => OrderedPartition n
-unitPartition = OP (singleton (interval (Proxy :: Proxy n)))
+unitPartition = OP (singleton interval)
 
 firstNontrivial :: OrderedPartition n -> Maybe (SeqZipper [Within n])
 firstNontrivial = listToMaybe . dropWhile ( ( == 1) . length . current ) . zippers
@@ -67,7 +66,7 @@ isDiscrete = all ((== 1) . length) . F.toList . getPartition
 
 discreteToPermutation :: (KnownNat n) => OrderedPartition n -> Maybe (Permutation n)
 discreteToPermutation ptn = if isDiscrete ptn 
-                            then case (mkPermutation . listArray (1,order ptn) . concat . F.toList . getPartition) ptn of 
+                            then case (mkPermutation . listArray (1,order) . concat . F.toList . getPartition) ptn of 
                                    Left err -> error err -- cannot happen. guaranteed by OrderedPartition
                                    Right p -> Just p
                             else Nothing

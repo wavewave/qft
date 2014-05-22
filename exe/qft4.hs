@@ -135,3 +135,6 @@ main = do
   putStrLn "finally" 
   print (canonicalLabel g2)
   
+  --
+  putStrLn "test globalVertexDegree"
+  print (globalVertexDegree asc)

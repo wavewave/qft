@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module McKay where
 
 import           GHC.TypeLits
@@ -7,12 +9,14 @@ import           Data.List (delete)
 import qualified Data.Map as M
 import           Data.Maybe
 import           Data.Monoid ((<>))
+import           Data.Proxy
 import           Data.Sequence (fromList, (<|), empty)
 import           Data.Tree
 --
 import           Data.Partition
 import           Data.Permute
 import           Data.SeqZipper
+import           Data.Within
 import Graph 
 -- 
 
@@ -22,7 +26,14 @@ shatteringBy arr vi vj = let resultmap = foldr f M.empty vi
                          in map ((flip ($) []) . snd) asclst
   where  
     f x acc = let d = degree arr vj x
-              in M.insertWith (\n o ->  n . o)  d (x:) acc 
+              in M.insertWith (.)  d (x:) acc 
+
+-- |
+globalVertexDegree :: forall n. (KnownNat n) => AssocMap n -> [ (Int, [Vertex n] ) ]
+globalVertexDegree arr = map deg (shatteringBy arr u u)
+  where u = interval (Proxy :: Proxy n)
+        deg vs = let v = head vs -- we know that this is safe as a result of shatteringBy 
+                 in (degree arr u v, vs)
 
 -- |
 shatter :: AssocMap n -> OrderedPartition n -> [OrderedPartition n]

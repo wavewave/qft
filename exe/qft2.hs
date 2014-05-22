@@ -46,6 +46,9 @@ main = do
   -- print (size gs')
 
 
+
+
+
   let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
       pairs= (zip fnames . map makeDotGraph . toList) gs''
 

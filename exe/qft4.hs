@@ -3,12 +3,14 @@
 module Main where
 
 import           Data.Array
+import           Data.Graph
 import qualified Data.HashSet as H
 import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
 import           Data.Proxy
-import           Data.Sequence
+-- import           Data.Sequence
 import           Data.Tree
+import           System.FilePath
 --
 import           Data.Partition
 import           Data.Permute
@@ -17,6 +19,8 @@ import           Data.Within
 import           Diagram
 import           Graph
 import           McKay
+import           Topology.Generate
+import           Topology.PrettyPrint
 
 a :: UndirEdge 4
 a = mkUndirEdge 1 2 
@@ -33,22 +37,10 @@ d = mkUndirEdge 1 4
 
 main :: IO ()
 main = do  
-  let tarr :: Array (Within 4) (Within 4)
-      tarr = array (1, 4) [ (1, 4),(2,3),(3,1), (4,2)]
-      perm = case (mkPermutation tarr :: Either String (Permutation 4)) of
-               Left str -> error str
-               Right x -> x  
-  print (permute perm 1)
-  print (permute (inverse perm) 2)
-
-  print (map (permute perm) [ 1,2,3,4 ] )
-
 
   let g1 :: UndirGraph 4
       g1 = mkUndirGraph [a,d] 
 
-  print g1
-  print (permuteGraph perm g1) 
   let asc = mkAssocMap g1
   print (map (degree asc [1,2]) [1,2,3,4])
 
@@ -105,20 +97,6 @@ main = do
       e3 = equitableRefinement asc r3
   print e3 
   print (fmap unSZ (firstNontrivial e3))
-
-  
-
-  -- putStrLn "new test"
-  -- print ( shatteringBy asc [3,7,9] [6,8] )
-{-
-  let eop = mkOrderedPartition [ [ 1,2,3] , [4] , [5,6] ] :: Either String (OrderedPartition 6)
-  case eop of 
-    Left err -> error err
-    Right op -> do
-      print opt
-      mapM_ print (shatter undefined op)
--}
-
   
 
   let testtree = createSearchTree asc 
@@ -143,12 +121,42 @@ main = do
   print (globalVertexDegree asc)
   -- 
   putStrLn "test undirToDirected"
-  print (undirToDirected cg)
+  let dg = undirToDirected cg
+  print dg 
+  print (length (scc dg))
+  
   -- 
   putStrLn "test vtype"
-  let vtype1 = VK 1 "a" [(1,I,1),(2,I,1),(3,I,1)]
-      vtype2 = VK 2 "b" [(2,O,1),(3,I,1)]
-      vtype3 = VK 3 "c" [(1,I,2),(2,I,1),(3,O,1)]
-      vtypes = H.fromList [vtype1,vtype2,vtype3]
+  let vtype1 = VK 1 "a" [(1,U,1)]
+      -- vtype2 = VK 2 "b" [(1,U,2)]
+      vtype3 = VK 3 "c" [(1,U,3)]
+      -- vtype4 = VK 4 "d" [(1,U,4)]
+      vtypes = H.fromList [vtype1,vtype3] -- [vtype1,vtype2,vtype3,vtype4]
  
-  print (doesMatchKind vtypes asc)
+  print (asc `isCompatibleWith` vtypes)
+
+  
+  let gg :: H.HashSet (UndirGraph 8)
+      gg = H.singleton (mkUndirGraph [ ])
+ 
+      -- generator = foldr H.insert H.empty . map canonicalLabel . concatMap generate1EdgeMore' . H.toList
+      gg' = -- (generator . generator . generator . generator . generator . generator . generator . generator) gg 
+            foldr1 (.) (replicate 8 nextEdgeLevelConnected) gg
+       
+  -- print (H.size gg')
+  putStrLn "Test HERE"
+
+  print (H.size gg')
+  let resultgs =H.filter ((`isCompatibleWith` vtypes) . mkAssocMap) gg'
+  
+  print (H.size resultgs)
+  
+
+  {-
+  let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
+      pairs= (zip fnames . map makeDotGraph . H.toList) resultgs
+
+  mapM_ (\(x,y) -> writeFile x y >> runDot x) pairs
+
+  writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 
+  -}  

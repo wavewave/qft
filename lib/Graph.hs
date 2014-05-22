@@ -6,6 +6,7 @@ module Graph where
 import           GHC.TypeLits
 -- 
 import           Data.Array
+import           Data.Graph (Graph)
 import           Data.Hashable
 import           Data.Maybe (mapMaybe)
 import           Data.List (sortBy )
@@ -92,4 +93,14 @@ mkAssocMap (UG (SE es)) = let alst = map (\v -> (v, mapMaybe (connectedVertex v)
 degree :: AssocMap n -> [ Vertex n ] -> Vertex n -> Int
 degree arr ptn i = length (filter (`elem` ptn) (arr ! i))
 
+
+-- |
+assocMapToGraph :: forall n. (KnownNat n) => AssocMap n -> Graph
+assocMapToGraph asc = let n = (fromInteger . intValue) (order :: Within n)
+                          asc' = ixmap (1,n) (mkWithinMod . fromIntegral) asc
+                      in fmap (map (fromInteger . intValue)) asc'
+
+-- |
+undirToDirected :: forall n. (KnownNat n) => UndirGraph n -> Graph
+undirToDirected = assocMapToGraph . mkAssocMap
 

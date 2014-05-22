@@ -4,12 +4,12 @@ module Diagram where
 
 import           GHC.TypeLits
 --
-import           Data.Array
+-- import           Data.Array
 import           Data.Hashable
 import qualified Data.HashSet as H
-import           Data.Graph
+-- import           Data.Graph
 --
-import           Data.Within
+-- import           Data.Within
 import           Graph
 import           McKay
 
@@ -51,18 +51,12 @@ type VertexKindSet = H.HashSet VertexKind
 
 type EdgeKindSet = H.HashSet EdgeKind
 
-undirToDirected :: forall n. (KnownNat n) => UndirGraph n -> Graph
-undirToDirected = assocMapToGraph . mkAssocMap
 
-assocMapToGraph :: forall n. (KnownNat n) => AssocMap n -> Graph
-assocMapToGraph asc = let n = (fromInteger . intValue) (order :: Within n)
-                          asc' = ixmap (1,n) (mkWithinMod . fromIntegral) asc
-                      in fmap (map (fromInteger . intValue)) asc'
 
 -- listArray (1,fromInteger (intValue order)) lst 
-doesMatchKind :: (KnownNat n) => VertexKindSet -> AssocMap n -> Bool
-doesMatchKind vkinds asc = let d1 = H.map vertexKindDeg vkinds 
-                               d2 = (H.fromList . map fst . globalVertexDegree) asc
-                           in d1 == d2
+isCompatibleWith :: (KnownNat n) => AssocMap n -> VertexKindSet -> Bool
+isCompatibleWith asc vkinds = let d1 = H.map vertexKindDeg vkinds 
+                                  d2 = (H.fromList . map fst . globalVertexDegree) asc
+                              in H.null (H.difference d2 d1)  
 
                       

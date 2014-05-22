@@ -5,13 +5,15 @@ module Topology.Generate where
 
 import GHC.TypeLits
 --
-import Data.HashSet (HashSet)
+import           Data.Graph (scc, Tree(..) )
+import qualified Data.HashSet as H
 import Data.List (tails)
 --  
 import Data.Within
 import Graph
+import McKay
 
-type TopologySet n = HashSet (UndirGraph n)
+type TopologySet n = H.HashSet (UndirGraph n)
 
 addEdge :: UndirGraph n -> UndirEdge n  -> UndirGraph n
 addEdge (UG (SE es)) e = let es' = e : es in mkUndirGraph es' 
@@ -31,3 +33,13 @@ generate1EdgeMore g = map (addEdge g) pick2
 generate1EdgeMore' :: (KnownNat n) => UndirGraph n -> [UndirGraph n] 
 generate1EdgeMore' g = map (addEdge g) pick2distinct
 
+
+
+nextEdgeLevel :: (KnownNat n) => TopologySet n -> TopologySet n
+nextEdgeLevel = foldr H.insert H.empty . map canonicalLabel . concatMap generate1EdgeMore' . H.toList
+
+
+nextEdgeLevelConnected :: (KnownNat n) => TopologySet n -> TopologySet n
+nextEdgeLevelConnected = H.filter ((<=1) . length . filter (not . isIsolated) . scc . undirToDirected) . nextEdgeLevel
+  where isIsolated (Node _ []) = True
+        isIsolated _ = False

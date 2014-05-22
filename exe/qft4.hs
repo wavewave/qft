@@ -129,11 +129,14 @@ main = do
   
   -- 
   putStrLn "test vtype"
-  let vtype1 = VK 1 "a" [(1,U,1)]
+  let vtype1a = VK 1 "a" [(1,U,1)]
+      vtype1j = VK 10 "j" [(2,U,1)]
+      -- vtype1k = VK 11 "k" [(3,U,1)]
       -- vtype2 = VK 2 "b" [(1,U,2)]
-      vtype3 = VK 3 "c" [(1,U,3)]
+      vtype3c = VK 3 "c" [(1,U,3)]
+      vtype3d = VK 3 "d" [(2,U,3)]
       -- vtype4 = VK 4 "d" [(1,U,4)]
-      vtypes = H.fromList [vtype1,vtype3] -- [vtype1,vtype2,vtype3,vtype4]
+      vtypes = H.fromList [vtype1a,vtype1j,vtype3c] -- [vtype1,vtype2,vtype3,vtype4]
  
   print (isCompatibleWith vtypes asc)
 
@@ -141,9 +144,7 @@ main = do
   let gg :: H.HashSet (UndirGraph 8)
       gg = H.singleton (mkUndirGraph [ ])
  
-      -- generator = foldr H.insert H.empty . map canonicalLabel . concatMap generate1EdgeMore' . H.toList
-      gg' = -- (generator . generator . generator . generator . generator . generator . generator . generator) gg 
-            foldr1 (.) (replicate 8 nextEdgeLevelConnected) gg
+      gg' = foldr1 (.) (replicate 8 nextEdgeLevelConnected) gg
        
   -- print (H.size gg')
   putStrLn "Test HERE"
@@ -156,15 +157,29 @@ main = do
 
   let myg = (head . H.toList) resultgs 
       myasc = mkAssocMap myg
-  print (vertexCandidates vtypes myasc) 
+  putStrLn "vertex candidate"
+  let vc = vertexCandidates vtypes myasc
+  mapM_ print vc
+  putStrLn "inverse vertex candidate"
+  mapM_ print (inverseCandidates vc)
+  putStrLn "next test"
+  let vmap = generateVertexMapping vtypes myasc
+  mapM_ print vmap
+  putStrLn "next"
+  mapM_ print (map vertexMapToString vmap)
+  
   -- let namemap = M.fromList [ (1, "a" ),  (2, "b") , (3, "c") ]  
+  let graphlist = do g <- H.toList resultgs
+                     let am = mkAssocMap g
+                     vm <- generateVertexMapping vtypes am
+                     let nm = vertexMapToString vm
+                     return (nm,g)
+ 
 
-
-
-  -- print
-  {-    
+  putStrLn "printing graphs"
+  
   let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
-      pairs= (zip fnames . map (makeDotGraph namemap) . H.toList) resultgs
+      pairs= (zip fnames . map (uncurry makeDotGraph) ) graphlist
 
   mapM_ (\(x,y) -> writeFile x y >> runNeato x) pairs
 
@@ -173,4 +188,4 @@ main = do
   readProcess "pdflatex" [ "test.tex" ] ""
 
   return ()
-  -}
+  

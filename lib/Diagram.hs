@@ -11,8 +11,9 @@ import           Data.Hashable
 import qualified Data.HashSet as H
 -- import           Data.Graph
 import           Data.List (find)
+import qualified Data.Map as M
 import           Data.Maybe (mapMaybe)
--- import           Data.Traversable (sequenceA)
+import           Data.Traversable (sequenceA)
 --
 -- import           Data.Within
 import           Graph
@@ -39,7 +40,10 @@ trd3 (_,_,c) = c
 data VertexKind = VK { vertexKindId :: Int
                      , vertexKindName :: String
                      , vertexKindEdgeList :: [ (Int, Direction, Int) ]    -- (edge id, direction, multiplicity)
-                     } deriving (Show, Eq, Ord)
+                     } deriving (Eq, Ord)
+
+instance Show VertexKind where
+  show = vertexKindName
 
 vertexKindDeg :: VertexKind -> Int
 vertexKindDeg = sum . map trd3 . vertexKindEdgeList
@@ -63,15 +67,27 @@ isCompatibleWith vkinds asc = let d1 = H.map vertexKindDeg vkinds
                                   d2 = (H.fromList . map fst . globalVertexDegree) asc
                               in H.null (H.difference d2 d1)   
                       
--- generateVertexMapping :: VertexKindSet -> AssocMap n -> [ Map (Within n) String ] 
--- generateVertexMapping vkinds asc = let  
-
-
-
+-- |
 vertexCandidates :: (KnownNat n) => VertexKindSet -> AssocMap n -> [ (VertexKind, [Vertex n]) ] 
 vertexCandidates vkinds asc = (mapMaybe f . H.toList) vkinds 
   where dlst = globalVertexDegree asc
-        -- f :: VertexKind -> Maybe (VertexKind, [Vertex n])
         f x = let d = vertexKindDeg x
                   mx = find ((== d) . fst) dlst
               in (\y->(x,snd y)) <$> mx
+
+-- |
+inverseCandidates :: (KnownNat n) => [ (VertexKind, [Vertex n]) ] -> [ (Vertex n, [VertexKind])  ]
+inverseCandidates olst = let lst1 = [ (k,v) | (k,vs) <- olst, v <- vs ] 
+                             f (k,v) = M.insertWith (.) v (k:) 
+                             map2 = foldr f M.empty lst1 
+                         in (M.toAscList . fmap ((flip ($) []) )) map2 
+
+
+generateVertexMapping :: (KnownNat n) => VertexKindSet -> AssocMap n -> [ [ (Vertex n, VertexKind) ] ] -- -> [ Map (Within n) String ] 
+generateVertexMapping vkinds asc = sequenceA vks
+  where vc = inverseCandidates (vertexCandidates vkinds asc)
+        f (v,ks) = [(v,k)| k <- ks ] 
+        vks = map f vc
+
+vertexMapToString :: [ (Vertex n, VertexKind) ] -> M.Map (Vertex n) String
+vertexMapToString = fmap vertexKindName  . M.fromList 

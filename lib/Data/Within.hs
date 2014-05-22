@@ -14,7 +14,7 @@ import Data.Array
 import Data.Hashable
 import Data.Proxy
 
-newtype Within (n :: Nat) = MkWithin Integer 
+newtype Within (n :: Nat) = MkWithin { intValue :: Integer } 
                           deriving (Eq, Ord, Enum, Ix) 
 
 instance Show (Within n) where

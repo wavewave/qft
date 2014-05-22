@@ -3,6 +3,7 @@
 module Main where
 
 import           Data.Array
+import qualified Data.HashSet as H
 import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
 import           Data.Proxy
@@ -13,6 +14,7 @@ import           Data.Partition
 import           Data.Permute
 import           Data.SeqZipper
 import           Data.Within
+import           Diagram
 import           Graph
 import           McKay
 
@@ -133,8 +135,20 @@ main = do
   mapM_ print $ map (flip permuteGraph g2) (isomorphisms testtree)
   -- 
   putStrLn "finally" 
-  print (canonicalLabel g2)
+  let cg = canonicalLabel g2
+  print cg
   
   --
   putStrLn "test globalVertexDegree"
   print (globalVertexDegree asc)
+  -- 
+  putStrLn "test undirToDirected"
+  print (undirToDirected cg)
+  -- 
+  putStrLn "test vtype"
+  let vtype1 = VK 1 "a" [(1,I,1),(2,I,1),(3,I,1)]
+      vtype2 = VK 2 "b" [(2,O,1),(3,I,1)]
+      vtype3 = VK 3 "c" [(1,I,2),(2,I,1),(3,O,1)]
+      vtypes = H.fromList [vtype1,vtype2,vtype3]
+ 
+  print (doesMatchKind vtypes asc)

@@ -50,6 +50,7 @@ executable qft4
                        array,
                        containers,
                        filepath,
+                       unordered-containers,
                        qft
 
 Library
@@ -72,6 +73,7 @@ Library
                    Data.Permute
                    Data.SeqZipper
                    Data.Within
+                   Diagram
                    Graph
                    McKay
                    Tensor

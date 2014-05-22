@@ -24,10 +24,12 @@ executable qft2
    hs-source-dirs:      exe
    ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
    ghc-prof-options: -caf-all -auto-all
-   build-depends:       base == 4.* ,
-                        filepath,
-                        unordered-containers,
-                        qft
+   build-depends:   base == 4.*,
+                    containers,
+                    filepath,
+                    process,
+                    unordered-containers,
+                    qft
 
 -- executable qft3
 --   main-is:             qft3.hs
@@ -46,12 +48,13 @@ executable qft4
   hs-source-dirs:      exe
   ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
-  build-depends:       base == 4.*,
-                       array,
-                       containers,
-                       filepath,
-                       unordered-containers,
-                       qft
+  build-depends:   base == 4.*,
+                   array,
+                   containers,
+                   filepath,
+                   process,
+                   unordered-containers,
+                   qft
 
 Library
   hs-source-dirs: lib

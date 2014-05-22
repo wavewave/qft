@@ -1,13 +1,18 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 
 module Diagram where
 
 import           GHC.TypeLits
 --
+import           Control.Applicative
 -- import           Data.Array
 import           Data.Hashable
 import qualified Data.HashSet as H
 -- import           Data.Graph
+import           Data.List (find)
+import           Data.Maybe (mapMaybe)
+-- import           Data.Traversable (sequenceA)
 --
 -- import           Data.Within
 import           Graph
@@ -52,11 +57,21 @@ type VertexKindSet = H.HashSet VertexKind
 type EdgeKindSet = H.HashSet EdgeKind
 
 
-
--- listArray (1,fromInteger (intValue order)) lst 
-isCompatibleWith :: (KnownNat n) => AssocMap n -> VertexKindSet -> Bool
-isCompatibleWith asc vkinds = let d1 = H.map vertexKindDeg vkinds 
+-- |
+isCompatibleWith :: (KnownNat n) => VertexKindSet -> AssocMap n -> Bool
+isCompatibleWith vkinds asc = let d1 = H.map vertexKindDeg vkinds 
                                   d2 = (H.fromList . map fst . globalVertexDegree) asc
-                              in H.null (H.difference d2 d1)  
-
+                              in H.null (H.difference d2 d1)   
                       
+-- generateVertexMapping :: VertexKindSet -> AssocMap n -> [ Map (Within n) String ] 
+-- generateVertexMapping vkinds asc = let  
+
+
+
+vertexCandidates :: (KnownNat n) => VertexKindSet -> AssocMap n -> [ (VertexKind, [Vertex n]) ] 
+vertexCandidates vkinds asc = (mapMaybe f . H.toList) vkinds 
+  where dlst = globalVertexDegree asc
+        -- f :: VertexKind -> Maybe (VertexKind, [Vertex n])
+        f x = let d = vertexKindDeg x
+                  mx = find ((== d) . fst) dlst
+              in (\y->(x,snd y)) <$> mx

@@ -5,12 +5,14 @@ module Main where
 import           Data.Array
 import           Data.Graph
 import qualified Data.HashSet as H
+import qualified Data.Map as M
 import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
 import           Data.Proxy
 -- import           Data.Sequence
 import           Data.Tree
 import           System.FilePath
+import           System.Process
 --
 import           Data.Partition
 import           Data.Permute
@@ -133,7 +135,7 @@ main = do
       -- vtype4 = VK 4 "d" [(1,U,4)]
       vtypes = H.fromList [vtype1,vtype3] -- [vtype1,vtype2,vtype3,vtype4]
  
-  print (asc `isCompatibleWith` vtypes)
+  print (isCompatibleWith vtypes asc)
 
   
   let gg :: H.HashSet (UndirGraph 8)
@@ -147,16 +149,28 @@ main = do
   putStrLn "Test HERE"
 
   print (H.size gg')
-  let resultgs =H.filter ((`isCompatibleWith` vtypes) . mkAssocMap) gg'
+  let -- asc' = mkAssocMap gg'
+      resultgs =H.filter ((isCompatibleWith vtypes) . mkAssocMap) gg' 
   
   print (H.size resultgs)
-  
 
-  {-
+  let myg = (head . H.toList) resultgs 
+      myasc = mkAssocMap myg
+  print (vertexCandidates vtypes myasc) 
+  -- let namemap = M.fromList [ (1, "a" ),  (2, "b") , (3, "c") ]  
+
+
+
+  -- print
+  {-    
   let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
-      pairs= (zip fnames . map makeDotGraph . H.toList) resultgs
+      pairs= (zip fnames . map (makeDotGraph namemap) . H.toList) resultgs
 
-  mapM_ (\(x,y) -> writeFile x y >> runDot x) pairs
+  mapM_ (\(x,y) -> writeFile x y >> runNeato x) pairs
 
   writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 
-  -}  
+ 
+  readProcess "pdflatex" [ "test.tex" ] ""
+
+  return ()
+  -}

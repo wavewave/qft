@@ -7,9 +7,11 @@ import qualified Data.Foldable as F (forM_)
 import           Data.Function (on)
 import           Data.HashSet (insert,empty,size,toList)
 import           Data.List (nubBy, sortBy)
+import qualified Data.Map as M
 import           Data.Maybe (fromJust)
 import qualified Data.Permute as P
 import           System.FilePath
+import           System.Process
 -- 
 import           Graph
 import           McKay
@@ -39,7 +41,7 @@ main = do
                         , mkUndirEdge 3 4
                         , mkUndirEdge 4 1]
 
-  let gs = (map canonicalLabel . generate1EdgeMore') g1
+  let gs = (map canonicalLabel . generate1EdgeMore') g0
       gs' = foldr insert empty gs 
       gs'' = (foldr insert empty . map canonicalLabel . concatMap generate1EdgeMore' . toList) gs'    
   -- print (length gs'')
@@ -50,12 +52,14 @@ main = do
 
 
   let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
-      pairs= (zip fnames . map makeDotGraph . toList) gs''
+      pairs= (zip fnames . map (makeDotGraph M.empty) . toList) gs''
 
-  mapM_ (\(x,y) -> writeFile x y >> runDot x) pairs
+  mapM_ (\(x,y) -> writeFile x y >> runNeato x) pairs
 
   writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 
 
+  readProcess "pdflatex" [ "test.tex" ] ""
+  return ()
       
 {-  
   -- mapM_ print gs

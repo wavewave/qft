@@ -3,8 +3,10 @@
 module Main where
 
 import           Data.Array
+import           Data.Function (on)
 import           Data.Graph
 import qualified Data.HashSet as H
+import           Data.List (groupBy)
 import qualified Data.Map as M
 import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
@@ -101,7 +103,7 @@ main = do
   print (fmap unSZ (firstNontrivial e3))
   
 
-  let testtree = createSearchTree asc 
+  let testtree = createSearchTree unitPartition asc 
       testtree2 = fmap isDiscrete testtree
       testtree3 = fmap discreteToPermutation testtree
       -- lst = (catMaybes . fmap discreteToPermutation . flatten) testtree
@@ -115,7 +117,7 @@ main = do
   mapM_ print $ map (flip permuteGraph g2) (isomorphisms testtree)
   -- 
   putStrLn "finally" 
-  let cg = canonicalLabel g2
+  let cg = canonicalLabel unitPartition g2
   print cg
   
   --
@@ -150,8 +152,7 @@ main = do
   putStrLn "Test HERE"
 
   print (H.size gg')
-  let -- asc' = mkAssocMap gg'
-      resultgs =H.filter ((isCompatibleWith vtypes) . mkAssocMap) gg' 
+  let resultgs =H.filter ((isCompatibleWith vtypes) . mkAssocMap) gg' 
   
   print (H.size resultgs)
 
@@ -160,20 +161,23 @@ main = do
   putStrLn "vertex candidate"
   let vc = vertexCandidates vtypes myasc
   mapM_ print vc
-  -- putStrLn "inverse vertex candidate"
-  -- mapM_ print (inverseCandidates vc)
+
   putStrLn "next test"
   let vmap = generateVertexMapping vtypes myasc
   mapM_ print vmap
   putStrLn "next"
   mapM_ print (map vertexMapToString vmap)
   
-  -- let namemap = M.fromList [ (1, "a" ),  (2, "b") , (3, "c") ]  
   let graphlist = do g <- H.toList resultgs
                      let am = mkAssocMap g
                      vm <- generateVertexMapping vtypes am
                      let nm = vertexMapToString vm
-                     return (nm,g)
+                     return nm 
+                     -- return (nm,g)
+
+  let mkVtxClrPtn = mkOrderedPartition . map (map fst) . groupBy ((==) `on` snd) . M.assocs
+  (print  . map (mkVtxClrPtn))  graphlist
+  print (length graphlist)
   return ()
   {-
   putStrLn "printing graphs"

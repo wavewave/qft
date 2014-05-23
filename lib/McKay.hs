@@ -63,8 +63,8 @@ splittingBy ptn x = let SZ (oldpart, (ys,zs)) = locateInPartition ptn x
 type SearchTree n = Tree (OrderedPartition n) 
 
 -- | 
-createSearchTree :: (KnownNat n) => AssocMap n -> SearchTree n 
-createSearchTree asc = worker unitPartition
+createSearchTree :: (KnownNat n) => OrderedPartition n -> AssocMap n -> SearchTree n 
+createSearchTree ptn asc = worker ptn -- unitPartition
   where worker x = let y = equitableRefinement asc x 
                    in maybe (Node y []) (f y) (firstNontrivial y)
         f y (SZ (c,_)) = Node y (map (worker . splittingBy y)  c)
@@ -74,9 +74,9 @@ isomorphisms :: (KnownNat n) => SearchTree n -> [Permutation n]
 isomorphisms = catMaybes . fmap (fmap inverse . discreteToPermutation) . flatten
 
 -- |
-canonicalLabel :: (KnownNat n) => UndirGraph n -> UndirGraph n
-canonicalLabel g = let asc = mkAssocMap g
-                       tree = createSearchTree asc
-                       isos = isomorphisms tree
-                   in permuteGraph (head isos) g  -- guaranteed to exist at list one
+canonicalLabel :: (KnownNat n) => OrderedPartition n -> UndirGraph n -> UndirGraph n
+canonicalLabel ptn g = let asc = mkAssocMap g
+                           tree = createSearchTree ptn asc
+                           isos = isomorphisms tree
+                       in permuteGraph (head isos) g  -- guaranteed to exist at list one
 

@@ -9,6 +9,7 @@ import           Data.Graph (scc, Tree(..) )
 import qualified Data.HashSet as H
 import Data.List (tails)
 --  
+import Data.Partition (unitPartition)
 import Data.Within
 import Graph
 import McKay
@@ -36,7 +37,7 @@ generate1EdgeMore' g = map (addEdge g) pick2distinct
 
 
 nextEdgeLevel :: (KnownNat n) => TopologySet n -> TopologySet n
-nextEdgeLevel = foldr H.insert H.empty . map canonicalLabel . concatMap generate1EdgeMore' . H.toList
+nextEdgeLevel = foldr H.insert H.empty . map (canonicalLabel unitPartition) . concatMap generate1EdgeMore' . H.toList
 
 
 nextEdgeLevelConnected :: (KnownNat n) => TopologySet n -> TopologySet n

@@ -91,3 +91,6 @@ generateVertexMapping vkinds asc = sequenceA vks
 
 vertexMapToString :: [ (Vertex n, VertexKind) ] -> M.Map (Vertex n) String
 vertexMapToString = fmap vertexKindName  . M.fromList 
+
+
+-- recanonicalizeColoredGraph 

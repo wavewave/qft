@@ -13,6 +13,7 @@ import qualified Data.Permute as P
 import           System.FilePath
 import           System.Process
 -- 
+import           Data.Partition (unitPartition)
 import           Graph
 import           McKay
 import           Topology.Generate
@@ -41,9 +42,9 @@ main = do
                         , mkUndirEdge 3 4
                         , mkUndirEdge 4 1]
 
-  let gs = (map canonicalLabel . generate1EdgeMore') g0
+  let gs = (map (canonicalLabel unitPartition) . generate1EdgeMore') g0
       gs' = foldr insert empty gs 
-      gs'' = (foldr insert empty . map canonicalLabel . concatMap generate1EdgeMore' . toList) gs'    
+      gs'' = (foldr insert empty . map (canonicalLabel unitPartition) . concatMap generate1EdgeMore' . toList) gs'    
   -- print (length gs'')
   -- print (size gs')
 

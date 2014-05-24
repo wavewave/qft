@@ -68,7 +68,7 @@ Library
                    hashable,
                    mtl,
                    process,
-                   singletons,
+                   -- singletons,
                    transformers,
                    unordered-containers
   Exposed-Modules: 

@@ -96,9 +96,9 @@ degree arr ptn i = length (filter (`elem` ptn) (arr ! i))
 
 -- |
 assocMapToGraph :: forall n. (KnownNat n) => AssocMap n -> Graph
-assocMapToGraph asc = let n = (fromInteger . intValue) (order :: Within n)
-                          asc' = ixmap (1,n) (mkWithinMod . fromIntegral) asc
-                      in fmap (map (fromInteger . intValue)) asc'
+assocMapToGraph asc = let n = intValue (order :: Within n)
+                          asc' = ixmap (1,n) mkWithinMod  asc
+                      in fmap (map intValue) asc'
 
 -- |
 undirToDirected :: forall n. (KnownNat n) => UndirGraph n -> Graph

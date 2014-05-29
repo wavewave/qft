@@ -6,16 +6,13 @@ module Diagram where
 import           GHC.TypeLits
 --
 import           Control.Applicative
--- import           Data.Array
 import           Data.Hashable
 import qualified Data.HashSet as H
--- import           Data.Graph
 import           Data.List (find)
 import qualified Data.Map as M
 import           Data.Maybe (mapMaybe)
 import           Data.Traversable (sequenceA)
 --
--- import           Data.Within
 import           Graph
 import           McKay
 
@@ -83,7 +80,7 @@ transpose olst = let lst1 = [ (k,v) | (k,vs) <- olst, v <- vs ]
                  in (M.toAscList . fmap ((flip ($) []) )) map2 
 
 
-generateVertexMapping :: (KnownNat n) => VertexKindSet -> AssocMap n -> [ [ (Vertex n, VertexKind) ] ] -- -> [ Map (Within n) String ] 
+generateVertexMapping :: (KnownNat n) => VertexKindSet -> AssocMap n -> [ [ (Vertex n, VertexKind) ] ] 
 generateVertexMapping vkinds asc = sequenceA vks
   where vc = transpose (vertexCandidates vkinds asc)
         f (v,ks) = [(v,k)| k <- ks ] 
@@ -93,4 +90,3 @@ vertexMapToString :: [ (Vertex n, VertexKind) ] -> M.Map (Vertex n) String
 vertexMapToString = fmap vertexKindName  . M.fromList 
 
 
--- recanonicalizeColoredGraph 

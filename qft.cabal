@@ -77,7 +77,7 @@ Library
                    Data.Partition
                    Data.Permute
                    Data.SeqZipper
-                   Data.Within
+                   Data.Fin1
                    Diagram
                    Graph
                    McKay

@@ -21,7 +21,7 @@ import           System.Process
 import           Data.Partition
 import           Data.Permute
 import           Data.SeqZipper
-import           Data.Within
+import           Data.Fin1
 import           Diagram
 import           Graph
 import           McKay

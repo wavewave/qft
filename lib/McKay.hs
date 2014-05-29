@@ -12,10 +12,10 @@ import           Data.Monoid ((<>))
 import           Data.Sequence (fromList, (<|), empty)
 import           Data.Tree
 --
+import           Data.Fin1
 import           Data.Partition
 import           Data.Permute
 import           Data.SeqZipper
-import           Data.Within
 import Graph 
 -- 
 

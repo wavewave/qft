@@ -8,10 +8,10 @@ import qualified Data.Map as M
 import System.FilePath ( (<.>), dropExtension )
 import System.Process
 --
-import Data.Within
+import Data.Fin1
 import Graph
 
-type NameMap n = M.Map (Within n) String
+type NameMap n = M.Map (Fin1 n) String
 
 {- 
 testfun :: Int -> String

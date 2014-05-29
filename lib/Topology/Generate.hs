@@ -10,7 +10,7 @@ import qualified Data.HashSet as H
 import Data.List (tails)
 --  
 import Data.Partition (unitPartition)
-import Data.Within
+import Data.Fin1
 import Graph
 import McKay
 

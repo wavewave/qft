@@ -21,18 +21,18 @@ import           Data.Sequence (Seq, ViewL(..), viewl, fromList, singleton)
 -- 
 import           Data.Permute
 import           Data.SeqZipper
-import           Data.Within
+import           Data.Fin1
 
 -- |
-newtype OrderedPartition n = OP { getPartition :: Seq [Within n] }
+newtype OrderedPartition n = OP { getPartition :: Seq [Fin1 n] }
                            deriving Show
 
-mkOrderedPartition :: forall (n :: Nat) . (KnownNat n) => [ [ Within n ] ] -> Either String (OrderedPartition n)
+mkOrderedPartition :: forall (n :: Nat) . (KnownNat n) => [ [ Fin1 n ] ] -> Either String (OrderedPartition n)
 mkOrderedPartition lst = runST action
   where nn = order 
         action :: forall s. ST s (Either String (OrderedPartition n))        
         action =   runEitherT $ do 
-                     rarr <- lift (newArray (1,nn) Nothing :: ST s (STArray s (Within n) (Maybe ())))
+                     rarr <- lift (newArray (1,nn) Nothing :: ST s (STArray s (Fin1 n) (Maybe ())))
                      F.forM_ (concat lst) $ \r -> do
                        o <- lift (readArray rarr r)
                        case o of
@@ -46,18 +46,18 @@ mkOrderedPartition lst = runST action
 unitPartition :: forall n. (KnownNat n) => OrderedPartition n
 unitPartition = OP (singleton interval)
 
-firstNontrivial :: OrderedPartition n -> Maybe (SeqZipper [Within n])
+firstNontrivial :: OrderedPartition n -> Maybe (SeqZipper [Fin1 n])
 firstNontrivial = listToMaybe . dropWhile ( ( == 1) . length . current ) . zippers
 
 
 
-zippers :: OrderedPartition n -> [ SeqZipper [Within n] ]
+zippers :: OrderedPartition n -> [ SeqZipper [Fin1 n] ]
 zippers (OP ptn) = (catMaybes . takeWhile (isJust) . iterate (moveRight =<<)) (pure ptn1)
   where ptn1 = case viewl ptn of
                  EmptyL -> error "impossble" -- guaranteed from OrderedPartition and n >= 1
                  x :< xs -> fromNonEmptySeq (x,xs)
 
-locateInPartition :: OrderedPartition n -> Within n -> SeqZipper [Within n]
+locateInPartition :: OrderedPartition n -> Fin1 n -> SeqZipper [Fin1 n]
 locateInPartition ptn x = head (filter (p x) (zippers ptn))   -- this is guaranteed for ordered partition
   where p y z = y `elem` current z
 

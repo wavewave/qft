@@ -12,12 +12,12 @@ import           Data.Maybe (mapMaybe)
 import           Data.List (sortBy )
 -- 
 import           Data.Permute
-import           Data.Within
+import           Data.Fin1
 -- 
 import Prelude hiding (lookup)
 
 -- |
-type Vertex n = Within n
+type Vertex n = Fin1 n
 
 -- |
 data UndirEdge n = UE { edgeV1 :: Vertex n
@@ -96,8 +96,8 @@ degree arr ptn i = length (filter (`elem` ptn) (arr ! i))
 
 -- |
 assocMapToGraph :: forall n. (KnownNat n) => AssocMap n -> Graph
-assocMapToGraph asc = let n = intValue (order :: Within n)
-                          asc' = ixmap (1,n) mkWithinMod  asc
+assocMapToGraph asc = let n = intValue (order :: Fin1 n)
+                          asc' = ixmap (1,n) mkFin1Mod  asc
                       in fmap (map intValue) asc'
 
 -- |

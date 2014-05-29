@@ -5,6 +5,8 @@ module Main where
 import           Data.Array
 import           Data.Function (on)
 import           Data.Graph
+import           Data.Graph.Automorphism
+import           Data.Hashable
 import qualified Data.HashSet as H
 import           Data.List (groupBy)
 import qualified Data.Map as M
@@ -25,6 +27,10 @@ import           Graph
 import           McKay
 import           Topology.Generate
 import           Topology.PrettyPrint
+
+instance (Ix i, Hashable a) => Hashable (Array i a) where
+  hashWithSalt salt arr = hashWithSalt salt (elems arr)
+
 
 a :: UndirEdge 4
 a = mkUndirEdge 1 2 
@@ -156,7 +162,7 @@ main = do
   
   print (H.size resultgs)
 
-  let myg = (head . H.toList) resultgs 
+  let myg = ((!! 2) . H.toList) resultgs 
       myasc = mkAssocMap myg
   putStrLn "vertex candidate"
   let vc = vertexCandidates vtypes myasc
@@ -164,32 +170,68 @@ main = do
 
   putStrLn "next test"
   let vmap = generateVertexMapping vtypes myasc
+      vmapptn = map (transpose . map (\(x,y) -> (x,[y]))) vmap  
   mapM_ print vmap
-  putStrLn "next"
-  mapM_ print (map vertexMapToString vmap)
-  
-  let graphlist = do g <- H.toList resultgs
-                     let am = mkAssocMap g
-                     vm <- generateVertexMapping vtypes am
-                     let nm = vertexMapToString vm
-                     return nm 
-                     -- return (nm,g)
+  mapM_ print vmapptn
 
-  let mkVtxClrPtn = mkOrderedPartition . map (map fst) . groupBy ((==) `on` snd) . M.assocs
-  (print  . map (mkVtxClrPtn))  graphlist
-  print (length graphlist)
-  return ()
+  let vmapptn' = map (map (map intValue . snd)) vmapptn 
+  mapM_ print vmapptn'
+
+  putStrLn "new test"
+  let newmyg = undirToDirected myg
+
+  let finaltops = (H.toList . H.fromList . map (\ptn -> canonicGraph ptn newmyg)) vmapptn' 
+  mapM_ print finaltops
+  
+  {-
+  let l1 = H.fromList (autGenerators [[1,2],[3,4],[5,6,7,8]] newmyg)
+      l0 = H.fromList (autGenerators [[1,2,3,4],[5,6,7,8]] newmyg)
+      l2 = H.fromList (autGenerators [[1,3],[2,4],[5,6,7,8]] newmyg)
+      l3 = H.fromList (autGenerators [[5,6,7,8],[4,2],[3,1]] newmyg)
+  print (H.difference l0 l1)  
+  print (H.difference l0 l2)
+  print (H.difference l0 l3)
+  -}
+
+  putStrLn "-----"
+  print (canonicGraph [[1,2],[3,4],[5,6,7,8]] newmyg)
+  -- print (canonicGraph [[1,2,3,4],[5,6,7,8]] newmyg)
+  print (canonicGraph [[1,3],[2,4],[5,6,7,8]] newmyg)
+  -- print (canonicGraph [[2,4],[1,3],[5,6,7,8]] newmyg)
+
+ 
+  -- putStrLn "next"
+  -- mapM_ print (map vertexMapToString vmap)
+
+  
+
+  {- 
+  putStrLn "test2" 
+  (mapM_ print . map (transpose . map (\(x,y)->(x,[y])))) vmap
+  let nmaplist g = do let am = mkAssocMap g
+                      vm <- generateVertexMapping vtypes am
+                      let nm = vertexMapToString vm
+                      return nm
+  -}
+ 
+  -- let mkVtxClrPtn = mkOrderedPartition . map (map fst) . groupBy ((==) `on` snd) . M.assocs
+  -- (mapM_ print  . map (mkVtxClrPtn))  (nmaplist myg)
+  -- print (length (nmaplist myg))
+  
+  -- mapM_ print (nmaplist myg)
+  -- 
+
   {-
   putStrLn "printing graphs"
   
   let fnames = map (\x -> "test" ++ show x ++ ".dot") [1..]
-      pairs= (zip fnames . map (uncurry makeDotGraph) ) graphlist
+      pairs= (zip fnames . map (uncurry makeDotGraph) ) ([(nm,g) | g <- [myg], nm <- nmaplist g  ])
 
   mapM_ (\(x,y) -> writeFile x y >> runNeato x) pairs
 
   writeFile "test.tex" $ makeTexFile (map (dropExtension.fst) pairs) 
  
   readProcess "pdflatex" [ "test.tex" ] ""
-
-  return ()
   -}
+  return ()
+  

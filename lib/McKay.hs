@@ -64,14 +64,14 @@ type SearchTree n = Tree (OrderedPartition n)
 
 -- | 
 createSearchTree :: (KnownNat n) => OrderedPartition n -> AssocMap n -> SearchTree n 
-createSearchTree ptn asc = worker ptn -- unitPartition
+createSearchTree ptn asc = worker ptn
   where worker x = let y = equitableRefinement asc x 
                    in maybe (Node y []) (f y) (firstNontrivial y)
         f y (SZ (c,_)) = Node y (map (worker . splittingBy y)  c)
 
 -- |   
-isomorphisms :: (KnownNat n) => SearchTree n -> [Permutation n]
-isomorphisms = catMaybes . fmap (fmap inverse . discreteToPermutation) . flatten
+isomorphisms :: (KnownNat n) => SearchTree n -> [Perm n]
+isomorphisms = catMaybes . fmap (fmap inverse . discreteToPerm) . flatten
 
 -- |
 canonicalLabel :: (KnownNat n) => OrderedPartition n -> UndirGraph n -> UndirGraph n

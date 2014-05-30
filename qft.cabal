@@ -58,9 +58,19 @@ executable qft4
                    unordered-containers,
                    qft
 
+executable qft5
+  main-is:             qft5.hs
+  hs-source-dirs:      exe
+  ghc-options: 	-Wall -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-prof-options: -caf-all -auto-all
+  build-depends:   base == 4.*,
+                   array,
+                   qft
+
+
 Library
   hs-source-dirs: lib
-  ghc-options: 	-Wall -Werror -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-options: 	-Wall -Werror -funbox-strict-fields -fno-warn-unused-do-bind -fno-warn-orphans
   ghc-prof-options: -caf-all -auto-all
   Build-Depends:   base == 4.*,
                    array,

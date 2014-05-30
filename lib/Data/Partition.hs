@@ -64,9 +64,9 @@ locateInPartition ptn x = head (filter (p x) (zippers ptn))   -- this is guarant
 isDiscrete :: OrderedPartition n -> Bool 
 isDiscrete = all ((== 1) . length) . F.toList . getPartition
 
-discreteToPermutation :: (KnownNat n) => OrderedPartition n -> Maybe (Permutation n)
-discreteToPermutation ptn = if isDiscrete ptn 
-                            then case (mkPermutation . listArray (1,order) . concat . F.toList . getPartition) ptn of 
+discreteToPerm :: (KnownNat n) => OrderedPartition n -> Maybe (Perm n)
+discreteToPerm ptn = if isDiscrete ptn 
+                            then case (mkPerm . listArray (1,order) . concat . F.toList . getPartition) ptn of 
                                    Left err -> error err -- cannot happen. guaranteed by OrderedPartition
                                    Right p -> Just p
                             else Nothing

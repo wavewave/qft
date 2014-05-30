@@ -28,8 +28,6 @@ import           McKay
 import           Topology.Generate
 import           Topology.PrettyPrint
 
-instance (Ix i, Hashable a) => Hashable (Array i a) where
-  hashWithSalt salt arr = hashWithSalt salt (elems arr)
 
 
 a :: UndirEdge 4
@@ -111,7 +109,7 @@ main = do
 
   let testtree = createSearchTree unitPartition asc 
       testtree2 = fmap isDiscrete testtree
-      testtree3 = fmap discreteToPermutation testtree
+      testtree3 = fmap discreteToPerm testtree
       -- lst = (catMaybes . fmap discreteToPermutation . flatten) testtree
  
   putStrLn (drawTree (fmap show testtree))

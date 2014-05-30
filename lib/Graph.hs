@@ -74,11 +74,11 @@ mkUndirGraph :: [UndirEdge n] -> UndirGraph n
 mkUndirGraph es = UG (mkSortedEdges es)
 
 -- |
-permuteEdge :: Permutation n -> UndirEdge n -> UndirEdge n
+permuteEdge :: Perm n -> UndirEdge n -> UndirEdge n
 permuteEdge p (UE v1 v2) = mkUndirEdge (permute p v1) (permute p v2)
 
 -- |
-permuteGraph :: Permutation n -> UndirGraph n -> UndirGraph n 
+permuteGraph :: Perm n -> UndirGraph n -> UndirGraph n 
 permuteGraph p (UG (SE es)) = UG (mkSortedEdges (map (permuteEdge p) es)) 
 
 -- |

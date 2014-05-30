@@ -15,19 +15,30 @@ import Control.Monad.Trans.Either (runEitherT, left, hoistEither)
 import Data.Array
 import Data.Array.ST 
 import qualified Data.Foldable as F
+import Data.Hashable
+-- import qualified Data.HashMap.Strict as HM
+-- import qualified Data.Map as M
+
 -- 
 import Data.Fin1
 import Util
         
 -- |
-data Permutation (n :: Nat) = Permutation { forward :: Array (Fin1 n) (Fin1 n)
-                                          , backward :: Array (Fin1 n)  (Fin1 n) }
-                            deriving (Show)
+data Perm (n :: Nat) = Perm { forward :: Array (Fin1 n) (Fin1 n)
+                            , backward :: Array (Fin1 n)  (Fin1 n) }
+                     deriving (Show)
+
+
+instance (Ix i, Hashable a) => Hashable (Array i a) where
+  hashWithSalt salt arr = hashWithSalt salt (elems arr)
+
+instance (KnownNat n) => Hashable (Perm n) where 
+  hashWithSalt salt (Perm f b) = hashWithSalt salt (f,b)
 
 -- |
-mkPermutation :: forall (n :: Nat) . (KnownNat n) => Array (Fin1 n) (Fin1 n) -> Either String (Permutation n)
-mkPermutation arr= runST action
-  where action :: forall s. ST s (Either String (Permutation n))        
+mkPerm :: forall (n :: Nat) . (KnownNat n) => Array (Fin1 n) (Fin1 n) -> Either String (Perm n)
+mkPerm arr= runST action
+  where action :: forall s. ST s (Either String (Perm n))        
         action =   runEitherT $ do 
                      let (i1,i2) = bounds arr
                      hoistEither (guardEither "i1 is not 1" (i1 == 1))
@@ -41,14 +52,58 @@ mkPermutation arr= runST action
                          Nothing -> lift (writeArray rarr r (Just i))
                      F.forM_ [i1..i2] $ \r -> 
                        maybe (left "not reversible") (\i -> lift (writeArray rarr' r i)) =<< lift (readArray rarr r)
-                     return . Permutation arr =<< lift (freeze rarr')
+                     return . Perm arr =<< lift (freeze rarr')
 
  
 -- |
-permute :: Permutation n -> Fin1 n -> Fin1 n
+permute :: Perm n -> Fin1 n -> Fin1 n
 permute p i = forward p ! i
 
 -- | 
-inverse :: Permutation n -> Permutation n 
-inverse (Permutation f b) = Permutation b f
+inverse :: Perm n -> Perm n 
+inverse (Perm f b) = Perm b f
+
+-- |
+mult :: forall n. Perm n -> Perm n -> Perm n 
+mult p1 p2 = Perm f b 
+  where (f,b) = let (i1,i2) = bounds (forward p1)
+                    farr = listArray (i1,i2) [ r | i <- [i1..i2], let r = forward p2 ! (forward p1 ! i) ]
+                    barr = listArray (i1,i2) [ r | i <- [i1..i2], let r = backward p1 ! (backward p2 ! i) ]
+                in (farr,barr)
+
+
+-- k is |generators|, n is degree
+
+type Base (k :: Nat) (n :: Nat) = Array (Fin1 k) (Fin1 n) 
+
+type Generators (k :: Nat) (n :: Nat) =  Array (Fin1 k) (Perm n)
+
+type BSGS (k :: Nat) (n :: Nat) = (Base k n, Array (Fin1 k) [Perm n])
+
+-- makeBSGSFromSGS :: Base k n -> H.HashSet (Perm n) -> BSGS k n 
+
+
+
+-- | Schreier vector v is Omega -> {X}
+newtype SchreierVector (k :: Nat) (n :: Nat) = SV (Array (Fin1 n) (Maybe (Fin1 k)))
+
+-- | Backward pointer omega is Omega -> Omega
+newtype BackwardPointer (k :: Nat) (n :: Nat) = BP (Array (Fin1 n) (Maybe (Fin1 n)))
+
+-- | spanning tree is a pair of Schreier vector and backward pointer 
+newtype SpanningTree (k :: Nat) (n :: Nat) = ST ((SchreierVector k n, BackwardPointer k n))
+
+-- | Schreier structure V is defined for BSGS
+newtype SchreierStructure (k :: Nat) (n :: Nat) = SS (Array (Fin1 k,Fin1 n) (Maybe (Fin1 k,Fin1 n)))
+
+
+
+-- trace 
+-- orbit
+-- sift
+-- siftee
+-- strip
+-- permutationFromBaseImage (base impage to permutation)
+
+
 

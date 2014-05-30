@@ -5,6 +5,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PostfixOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UnicodeSyntax #-}
 
@@ -32,26 +33,64 @@ import Util
 
 type m :->  n = Array m n 
 
+type (n :: Nat) ▸ (m :: Nat) = Z_ m :-> Z_ n  
+
+
+fst3 :: (a,b,c) -> a
+fst3 (a,_,_) = a
+
+snd3 :: (a,b,c) -> b
+snd3 (_,b,_) = b
+
+trd3 :: (a,b,c) -> c
+trd3 (_,_,c) = c
 
 -- |
-data Perm (n :: Nat) = Perm { forward :: Z_ n  :->  Z_ n
-                            , backward :: Z_ n  :->  Z_ n 
+data Perm (n :: Nat) = Perm { forward :: n ▸ n
+                            , backward :: n ▸ n 
                             , firstUnfixed :: Maybe (Z_ n)
                             }
                      deriving (Show)
 
-
-
 type S_ = Perm 
 
-instance (Ix i, Hashable a) => Hashable (i :-> a) where
+class FromTuple a where 
+  type Tuple a :: * 
+  fromTuple :: Tuple a -> Either String a
+
+instance FromTuple (S_ 2) where
+  type Tuple (S_ 2) = (Z_ 2, Z_ 2)
+  fromTuple (a,b) = mkPerm (listArray (1,2) [a,b])
+
+instance FromTuple (S_ 3) where
+  type Tuple (S_ 3) = (Z_ 3, Z_ 3, Z_ 3)
+  fromTuple (a,b,c) = mkPerm (listArray (1,3) [a,b,c])
+
+instance FromTuple (S_ 4) where
+  type Tuple (S_ 4) = (Z_ 4, Z_ 4, Z_ 4, Z_ 4)
+  fromTuple (a,b,c,d) = mkPerm (listArray (1,4) [a,b,c,d])
+
+instance FromTuple (S_ 5) where
+  type Tuple (S_ 5) = (Z_ 5, Z_ 5, Z_ 5, Z_ 5, Z_ 5)
+  fromTuple (a,b,c,d,e) = mkPerm (listArray (1,5) [a,b,c,d,e])
+
+instance FromTuple (S_ 6) where
+  type Tuple (S_ 6) = (Z_ 6, Z_ 6, Z_ 6, Z_ 6, Z_ 6, Z_ 6)
+  fromTuple (a,b,c,d,e,f) = mkPerm (listArray (1,6) [a,b,c,d,e,f])
+
+instance FromTuple (S_ 7) where
+  type Tuple (S_ 7) = (Z_ 7, Z_ 7, Z_ 7, Z_ 7, Z_ 7, Z_ 7, Z_ 7)
+  fromTuple (a,b,c,d,e,f,g) = mkPerm (listArray (1,7) [a,b,c,d,e,f,g])
+
+
+instance (Ix i, Hashable a) => Hashable (Array i a) where
   hashWithSalt salt arr = hashWithSalt salt (elems arr)
 
 instance (KnownNat n) => Hashable (S_ n) where 
   hashWithSalt salt (Perm f _b _k) = hashWithSalt salt f
 
 -- |
-mkPerm :: forall (n :: Nat) . (KnownNat n) => (Z_ n :-> Z_ n) -> Either String (S_ n)
+mkPerm :: forall (n :: Nat) . (KnownNat n) => n ▸ n -> Either String (S_ n)
 mkPerm arr= runST action
   where action :: forall s. ST s (Either String (S_ n))        
         action =   runEitherT $ do 
@@ -106,7 +145,7 @@ mult p1 p2 = let (i1,i2) = bounds (forward p1)
 (·) :: S_ n -> S_ n -> S_ n 
 (·) = mult
 
-newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: Z_ k  :-> S_ n }
+newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: Z_ k :-> S_ n }
 
 isIdentity :: (KnownNat n) => S_ n -> Bool
 isIdentity = maybe True (const False) . firstUnfixed 
@@ -115,21 +154,23 @@ isIdentity = maybe True (const False) . firstUnfixed
 mkGen :: (KnownNat n) => (Z_ k :-> S_ n) -> Either String (Generator k n)
 mkGen gen = if (any isIdentity (elems gen)) then Left "identity included" else Right (Gen gen)
 
- 
+
 
 isFixedBy :: Z_ n -> S_ n -> Bool
 β `isFixedBy` g = β == (β ↙ g)
 
-
+-- | result = (fixed, first unfixed, rest unfixed)
 splitFixed :: (KnownNat n) => Generator k n -> ([Z_ n], [Z_ n])
 splitFixed gen = partition (\β -> (all (β `isFixedBy`) . elems . unGen) gen) interval
-  
+--  where effinterval p = (fst,
+
+
 chooseUnfixed :: (KnownNat n) => Generator k n -> Z_ n 
 chooseUnfixed = head . snd . splitFixed 
 
 -- k is |generators|, n is degree
 
-type Base (k :: Nat) (n :: Nat) = Z_ k :-> Z_ n
+type Base (k :: Nat) (n :: Nat) = k ▸ n
 
 
 newtype BSGS (k :: Nat) (n :: Nat) = BSGS (Base k n, Z_ k :-> [S_ n])

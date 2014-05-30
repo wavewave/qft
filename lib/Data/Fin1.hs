@@ -18,7 +18,7 @@ import Data.Proxy
 newtype Fin1 (n :: Nat) = MkFin1 { intValue :: Int } 
                           deriving (Eq, Ord, Enum, Ix) 
 
-type ℤ_ = Fin1
+type Z_ = Fin1
 
 instance Show (Fin1 n) where
   show (MkFin1 i) = show i

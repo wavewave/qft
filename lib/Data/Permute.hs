@@ -26,8 +26,8 @@ import Data.Fin1
 import Util
         
 -- |
-data Perm (n :: Nat) = Perm { forward :: Array (ℤ_ n) (ℤ_ n)
-                            , backward :: Array (ℤ_ n)  (ℤ_ n) }
+data Perm (n :: Nat) = Perm { forward :: Array (Z_ n) (Z_ n)
+                            , backward :: Array (Z_ n)  (Z_ n) }
                      deriving (Show)
 
 
@@ -40,14 +40,14 @@ instance (KnownNat n) => Hashable (S_ n) where
   hashWithSalt salt (Perm f b) = hashWithSalt salt (f,b)
 
 -- |
-mkPerm :: forall (n :: Nat) . (KnownNat n) => Array (ℤ_ n) (ℤ_ n) -> Either String (S_ n)
+mkPerm :: forall (n :: Nat) . (KnownNat n) => Array (Z_ n) (Z_ n) -> Either String (S_ n)
 mkPerm arr= runST action
   where action :: forall s. ST s (Either String (S_ n))        
         action =   runEitherT $ do 
                      let (i1,i2) = bounds arr
                      hoistEither (guardEither "i1 is not 1" (i1 == 1))
-                     rarr <- lift (newArray (i1,i2) Nothing :: ST s (STArray s (ℤ_ n) (Maybe (ℤ_ n))))
-                     rarr' <- lift (newArray_ (i1,i2) :: ST s (STArray s (ℤ_ n) (ℤ_ n)))
+                     rarr <- lift (newArray (i1,i2) Nothing :: ST s (STArray s (Z_ n) (Maybe (Z_ n))))
+                     rarr' <- lift (newArray_ (i1,i2) :: ST s (STArray s (Z_ n) (Z_ n)))
                      F.forM_ [i1..i2] $ \i -> do
                        let r = arr ! i
                        o <- lift (readArray rarr r)
@@ -60,11 +60,11 @@ mkPerm arr= runST action
 
  
 -- |
-permute :: S_ n -> ℤ_ n -> ℤ_ n
+permute :: S_ n -> Z_ n -> Z_ n
 permute p i = forward p ! i
 
 -- | synonym for permute
-(↙) :: ℤ_ n -> S_ n -> ℤ_ n 
+(↙) :: Z_ n -> S_ n -> Z_ n 
 (↙) = flip permute    
 
 
@@ -91,27 +91,27 @@ mult p1 p2 = Perm f b
 
 -- k is |generators|, n is degree
 
-type Base (k :: Nat) (n :: Nat) = Array (ℤ_ k) (ℤ_ n) 
+type Base (k :: Nat) (n :: Nat) = Array (Z_ k) (Z_ n) 
 
-type Generators (k :: Nat) (n :: Nat) =  Array (ℤ_ k) (S_ n)
+type Generators (k :: Nat) (n :: Nat) =  Array (Z_ k) (S_ n)
 
-type BSGS (k :: Nat) (n :: Nat) = (Base k n, Array (ℤ_ k) [S_ n])
+type BSGS (k :: Nat) (n :: Nat) = (Base k n, Array (Z_ k) [S_ n])
 
 -- makeBSGSFromSGS :: Base k n -> H.HashSet (S_ n) -> BSGS k n 
 
 
 
 -- | Schreier vector v is Omega -> {X}
-newtype SchreierVector (k :: Nat) (n :: Nat) = SV (Array (ℤ_ n) (Maybe (ℤ_ k)))
+newtype SchreierVector (k :: Nat) (n :: Nat) = SV (Array (Z_ n) (Maybe (Z_ k)))
 
 -- | Backward pointer omega is Omega -> Omega
-newtype BackwardPointer (k :: Nat) (n :: Nat) = BP (Array (ℤ_ n) (Maybe (ℤ_ n)))
+newtype BackwardPointer (k :: Nat) (n :: Nat) = BP (Array (Z_ n) (Maybe (Z_ n)))
 
 -- | spanning tree is a pair of Schreier vector and backward pointer 
 newtype SpanningTree (k :: Nat) (n :: Nat) = ST ((SchreierVector k n, BackwardPointer k n))
 
 -- | Schreier structure V is defined for BSGS
-newtype SchreierStructure (k :: Nat) (n :: Nat) = SS (Array (ℤ_ k, ℤ_ n) (Maybe (ℤ_ k, ℤ_ n)))
+newtype SchreierStructure (k :: Nat) (n :: Nat) = SS (Array (Z_ k, Z_ n) (Maybe (Z_ k, Z_ n)))
 
 
 

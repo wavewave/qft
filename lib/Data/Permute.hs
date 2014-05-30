@@ -12,17 +12,18 @@ module Data.Permute where
 
 import GHC.TypeLits
 -- 
-import Control.Monad.ST (ST, runST)
-import Control.Monad.Trans (lift)
-import Control.Monad.Trans.Either (runEitherT, left, hoistEither)
-import Data.Array
-import Data.Array.ST 
+import           Control.Monad (when)
+import           Control.Monad.ST (ST, runST)
+import           Control.Monad.Trans (lift)
+import           Control.Monad.Trans.Either (runEitherT, left, hoistEither)
+import           Data.Array
+import           Data.Array.ST 
 import qualified Data.Foldable as F
-import Data.Hashable
+import           Data.Hashable
 -- import qualified Data.HashMap.Strict as HM
-import           Data.List (partition)
+import           Data.List (partition,find)
 -- import qualified Data.Map as M
-
+import           Data.STRef (newSTRef, readSTRef, writeSTRef) 
 
 -- 
 import Data.Fin1
@@ -34,7 +35,7 @@ type m :->  n = Array m n
 -- |
 data Perm (n :: Nat) = Perm { forward :: Z_ n  :->  Z_ n
                             , backward :: Z_ n  :->  Z_ n 
-                            -- , firstUnfixed :: Z_ n 
+                            , firstUnfixed :: Maybe (Z_ n)
                             }
                      deriving (Show)
 
@@ -46,7 +47,7 @@ instance (Ix i, Hashable a) => Hashable (i :-> a) where
   hashWithSalt salt arr = hashWithSalt salt (elems arr)
 
 instance (KnownNat n) => Hashable (S_ n) where 
-  hashWithSalt salt (Perm f b) = hashWithSalt salt (f,b)
+  hashWithSalt salt (Perm f _b _k) = hashWithSalt salt f
 
 -- |
 mkPerm :: forall (n :: Nat) . (KnownNat n) => (Z_ n :-> Z_ n) -> Either String (S_ n)
@@ -55,17 +56,21 @@ mkPerm arr= runST action
         action =   runEitherT $ do 
                      let (i1,i2) = bounds arr
                      hoistEither (guardEither "i1 is not 1" (i1 == 1))
+                     mref <- lift (newSTRef (Nothing :: Maybe (Z_ n)))
                      rarr <- lift (newArray (i1,i2) Nothing :: ST s (STArray s (Z_ n) (Maybe (Z_ n))))
                      rarr' <- lift (newArray_ (i1,i2) :: ST s (STArray s (Z_ n) (Z_ n)))
                      F.forM_ [i1..i2] $ \i -> do
                        let r = arr ! i
+                       when (r /= i) $ lift (writeSTRef mref (Just i))
                        o <- lift (readArray rarr r)
                        case o of
                          Just _ -> left "not reversible"
                          Nothing -> lift (writeArray rarr r (Just i))
                      F.forM_ [i1..i2] $ \r -> 
                        maybe (left "not reversible") (\i -> lift (writeArray rarr' r i)) =<< lift (readArray rarr r)
-                     return . Perm arr =<< lift (freeze rarr')
+                     rarr'' <- lift (freeze rarr')
+                     mval <- lift (readSTRef mref)
+                     return (Perm arr rarr'' mval)
 
  
 -- |
@@ -79,7 +84,7 @@ permute p i = forward p ! i
 
 -- | 
 inverse :: S_ n -> S_ n 
-inverse (Perm f b) = Perm b f
+inverse (Perm f b k) = Perm b f k
 
 -- | synonym for inverse
 (^-) :: S_ n -> S_ n
@@ -87,11 +92,13 @@ inverse (Perm f b) = Perm b f
 
 -- |
 mult :: ∀ n. S_ n -> S_ n -> S_ n 
-mult p1 p2 = Perm f b 
-  where (f,b) = let (i1,i2) = bounds (forward p1)
-                    farr = listArray (i1,i2) [ r | i <- [i1..i2], let r = forward p2 ! (forward p1 ! i) ]
-                    barr = listArray (i1,i2) [ r | i <- [i1..i2], let r = backward p1 ! (backward p2 ! i) ]
-                in (farr,barr)
+mult p1 p2 = let (i1,i2) = bounds (forward p1)
+                 flst = [ (i,r) | i <- [i1..i2], let r = forward p2 ! (forward p1 ! i) ]
+                 blst = [ (i,r) | i <- [i1..i2], let r = backward p1 ! (backward p2 ! i) ]
+                 kval = fmap fst (find (\(i,r) -> i /= r) flst)
+                 farr = array (i1,i2) flst
+                 barr = array (i1,i2) blst
+             in Perm farr barr kval 
 
 -- | synonym for mult
 (·) :: S_ n -> S_ n -> S_ n 
@@ -100,7 +107,8 @@ mult p1 p2 = Perm f b
 newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: Z_ k  :-> S_ n }
 
 isIdentity :: (KnownNat n) => S_ n -> Bool
-isIdentity p = all (\i -> (forward p ! i) == i) interval
+isIdentity = maybe True (const False) . firstUnfixed 
+-- all (\i -> (forward p ! i) == i) interval
 
 mkGen :: (KnownNat n) => (Z_ k :-> S_ n) -> Either String (Generator k n)
 mkGen gen = if (any isIdentity (elems gen)) then Left "identity included" else Right (Gen gen)

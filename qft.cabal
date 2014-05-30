@@ -65,6 +65,8 @@ executable qft5
   ghc-prof-options: -caf-all -auto-all
   build-depends:   base == 4.*,
                    array,
+                   either,
+                   transformers,
                    qft
 
 

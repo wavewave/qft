@@ -23,6 +23,7 @@ import           Data.Hashable
 -- import qualified Data.HashMap.Strict as HM
 import           Data.List (partition,find)
 -- import qualified Data.Map as M
+import           Data.Maybe (isNothing)
 import           Data.STRef (newSTRef, readSTRef, writeSTRef) 
 
 -- 
@@ -61,7 +62,8 @@ mkPerm arr= runST action
                      rarr' <- lift (newArray_ (i1,i2) :: ST s (STArray s (Z_ n) (Z_ n)))
                      F.forM_ [i1..i2] $ \i -> do
                        let r = arr ! i
-                       when (r /= i) $ lift (writeSTRef mref (Just i))
+                       mval <- lift (readSTRef mref)
+                       when (r /= i && isNothing mval) $ lift (writeSTRef mref (Just i))
                        o <- lift (readArray rarr r)
                        case o of
                          Just _ -> left "not reversible"

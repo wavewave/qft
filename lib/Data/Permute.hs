@@ -5,6 +5,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PostfixOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UnicodeSyntax #-}
 
 module Data.Permute where
@@ -19,28 +20,36 @@ import Data.Array.ST
 import qualified Data.Foldable as F
 import Data.Hashable
 -- import qualified Data.HashMap.Strict as HM
+import           Data.List (partition)
 -- import qualified Data.Map as M
+
 
 -- 
 import Data.Fin1
 import Util
-        
+
+type m :->  n = Array m n 
+
+
 -- |
-data Perm (n :: Nat) = Perm { forward :: Array (Z_ n) (Z_ n)
-                            , backward :: Array (Z_ n)  (Z_ n) }
+data Perm (n :: Nat) = Perm { forward :: Z_ n  :->  Z_ n
+                            , backward :: Z_ n  :->  Z_ n 
+                            -- , firstUnfixed :: Z_ n 
+                            }
                      deriving (Show)
+
 
 
 type S_ = Perm 
 
-instance (Ix i, Hashable a) => Hashable (Array i a) where
+instance (Ix i, Hashable a) => Hashable (i :-> a) where
   hashWithSalt salt arr = hashWithSalt salt (elems arr)
 
 instance (KnownNat n) => Hashable (S_ n) where 
   hashWithSalt salt (Perm f b) = hashWithSalt salt (f,b)
 
 -- |
-mkPerm :: forall (n :: Nat) . (KnownNat n) => Array (Z_ n) (Z_ n) -> Either String (S_ n)
+mkPerm :: forall (n :: Nat) . (KnownNat n) => (Z_ n :-> Z_ n) -> Either String (S_ n)
 mkPerm arr= runST action
   where action :: forall s. ST s (Either String (S_ n))        
         action =   runEitherT $ do 
@@ -77,7 +86,7 @@ inverse (Perm f b) = Perm b f
 (^-) = inverse
 
 -- |
-mult :: forall n. S_ n -> S_ n -> S_ n 
+mult :: ∀ n. S_ n -> S_ n -> S_ n 
 mult p1 p2 = Perm f b 
   where (f,b) = let (i1,i2) = bounds (forward p1)
                     farr = listArray (i1,i2) [ r | i <- [i1..i2], let r = forward p2 ! (forward p1 ! i) ]
@@ -88,31 +97,49 @@ mult p1 p2 = Perm f b
 (·) :: S_ n -> S_ n -> S_ n 
 (·) = mult
 
+newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: Z_ k  :-> S_ n }
+
+isIdentity :: (KnownNat n) => S_ n -> Bool
+isIdentity p = all (\i -> (forward p ! i) == i) interval
+
+mkGen :: (KnownNat n) => (Z_ k :-> S_ n) -> Either String (Generator k n)
+mkGen gen = if (any isIdentity (elems gen)) then Left "identity included" else Right (Gen gen)
+
+ 
+
+isFixedBy :: Z_ n -> S_ n -> Bool
+β `isFixedBy` g = β == (β ↙ g)
+
+
+splitFixed :: (KnownNat n) => Generator k n -> ([Z_ n], [Z_ n])
+splitFixed gen = partition (\β -> (all (β `isFixedBy`) . elems . unGen) gen) interval
+  
+chooseUnfixed :: (KnownNat n) => Generator k n -> Z_ n 
+chooseUnfixed = head . snd . splitFixed 
 
 -- k is |generators|, n is degree
 
-type Base (k :: Nat) (n :: Nat) = Array (Z_ k) (Z_ n) 
+type Base (k :: Nat) (n :: Nat) = Z_ k :-> Z_ n
 
-type Generators (k :: Nat) (n :: Nat) =  Array (Z_ k) (S_ n)
 
-type BSGS (k :: Nat) (n :: Nat) = (Base k n, Array (Z_ k) [S_ n])
+newtype BSGS (k :: Nat) (n :: Nat) = BSGS (Base k n, Z_ k :-> [S_ n])
 
 -- makeBSGSFromSGS :: Base k n -> H.HashSet (S_ n) -> BSGS k n 
 
-
-
 -- | Schreier vector v is Omega -> {X}
-newtype SchreierVector (k :: Nat) (n :: Nat) = SV (Array (Z_ n) (Maybe (Z_ k)))
+newtype SchreierVector (k :: Nat) (n :: Nat) = SV (Z_ n :-> Maybe (Z_ k))
 
 -- | Backward pointer omega is Omega -> Omega
-newtype BackwardPointer (k :: Nat) (n :: Nat) = BP (Array (Z_ n) (Maybe (Z_ n)))
+newtype BackwardPointer (k :: Nat) (n :: Nat) = BP (Z_ n :-> Maybe (Z_ n))
 
 -- | spanning tree is a pair of Schreier vector and backward pointer 
-newtype SpanningTree (k :: Nat) (n :: Nat) = ST ((SchreierVector k n, BackwardPointer k n))
+newtype SpanningTree (k :: Nat) (n :: Nat) = SpanTr ((SchreierVector k n, BackwardPointer k n))
 
 -- | Schreier structure V is defined for BSGS
-newtype SchreierStructure (k :: Nat) (n :: Nat) = SS (Array (Z_ k, Z_ n) (Maybe (Z_ k, Z_ n)))
+newtype SchreierStructure (k :: Nat) (n :: Nat) = SS ((Z_ k, Z_ n) :-> Maybe (Z_ k, Z_ n))
 
+-- |
+newtype PartialBSGS (k :: Nat) (n :: Nat) = PBSGS (Base k n, Z_ k :-> [S_ n])
 
 
 -- trace 

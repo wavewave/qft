@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PostfixOperators #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 import Data.Array
 import Data.Fin1
@@ -15,7 +16,13 @@ main = do
               p2 <- mkPerm arr2 
               let  p = p1 · p2 
                    g = 2
-              return (p · (p^-), g ↙ p )
+                   α' = 3 :: Int
+
+              (gen :: Generator 1 5) <- mkGen (listArray (1,1) [p1  ] )  
+                  
+              -- return (p · (p^-), g ↙ p )
+              -- return (splitFixed gen) 
+              return (chooseUnfixed gen)
   
               
   print er

@@ -4,6 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Data.Fin1 where
 
@@ -16,6 +17,8 @@ import Data.Proxy
 
 newtype Fin1 (n :: Nat) = MkFin1 { intValue :: Int } 
                           deriving (Eq, Ord, Enum, Ix) 
+
+type ℤ_ = Fin1
 
 instance Show (Fin1 n) where
   show (MkFin1 i) = show i

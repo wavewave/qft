@@ -1,8 +1,11 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE PostfixOperators #-}
 
 import Data.Array
 import Data.Fin1
 import Data.Permute
+-- 
+import Prelude hiding ((^^))
 
 main = do 
   putStrLn "permutation test"
@@ -10,8 +13,9 @@ main = do
       arr2 = listArray (1,5) [1,3,2,4,5] :: Array (Fin1 5) (Fin1 5)
       er = do p1 <- mkPerm arr1
               p2 <- mkPerm arr2 
-              let  p = p1 `mult` p2 
-              
-              return (p `mult` inverse p)
+              let  p = p1 · p2 
+                   g = 2
+              return (p · (p^-), g ↙ p )
   
+              
   print er

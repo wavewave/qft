@@ -13,6 +13,7 @@ module Data.Permute where
 
 import GHC.TypeLits
 -- 
+import           Control.Applicative ((<$>))
 import           Control.Monad (when)
 import           Control.Monad.ST (ST, runST)
 import           Control.Monad.Trans (lift)
@@ -24,9 +25,9 @@ import           Data.Hashable
 -- import qualified Data.HashMap.Strict as HM
 import           Data.List (partition,find)
 -- import qualified Data.Map as M
-import           Data.Maybe (fromJust, isNothing)
+import           Data.Maybe (isNothing)
 import           Data.STRef (newSTRef, readSTRef, writeSTRef) 
-
+import           Data.Traversable
 -- 
 import Data.Fin1
 import Util
@@ -35,15 +36,11 @@ type m :->  n = Array m n
 
 type (n :: Nat) ▸ (m :: Nat) = Z_ m :-> Z_ n  
 
+-- instance F.Foldable (Array (Z_ m)) where
+--   foldr f z = foldr f z . elems
 
-fst3 :: (a,b,c) -> a
-fst3 (a,_,_) = a
-
-snd3 :: (a,b,c) -> b
-snd3 (_,b,_) = b
-
-trd3 :: (a,b,c) -> c
-trd3 (_,_,c) = c
+-- instance Traversable (Array (Z_ m)) where
+--  sequenceA = listArray (1,order) . sequenceA . elems 
 
 -- |
 data Perm (n :: Nat) = Perm { forward :: n ▸ n
@@ -54,9 +51,24 @@ data Perm (n :: Nat) = Perm { forward :: n ▸ n
 
 type S_ = Perm 
 
+-- | permutation which is not an identity
+data NonIdPerm (n :: Nat) = NonIdPerm { forward' :: n ▸ n
+                                      , backward' :: n ▸ n 
+                                      , firstUnfixed' :: Z_ n 
+                                      } 
+
+-- | obtain non-identity permutation from permutation by checking the first unfixed element
+maybeNonIdentity :: S_ n -> Maybe (NonIdPerm n)
+maybeNonIdentity (Perm f b mβ) = NonIdPerm f b <$> mβ
+
+-- | return back original permutation from nonidentity permutation
+toPermutation :: NonIdPerm n -> S_ n
+toPermutation (NonIdPerm f b β) = Perm f b (Just β) 
+
 class FromTuple a where 
   type Tuple a :: * 
   fromTuple :: Tuple a -> Either String a
+  -- toTuple :: a -> Tuple a 
 
 instance FromTuple (S_ 2) where
   type Tuple (S_ 2) = (Z_ 2, Z_ 2)
@@ -146,38 +158,44 @@ mult p1 p2 = let (i1,i2) = bounds (forward p1)
 (·) :: S_ n -> S_ n -> S_ n 
 (·) = mult
 
-newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: Z_ k :-> S_ n }
+newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: Z_ k :-> NonIdPerm n }
+
+permListFromGen :: Generator k n -> [ S_ n ]
+permListFromGen = map toPermutation . elems . unGen
 
 isIdentity :: (KnownNat n) => S_ n -> Bool
 isIdentity = maybe True (const False) . firstUnfixed 
 -- all (\i -> (forward p ! i) == i) interval
 
 mkGen :: (KnownNat n) => (Z_ k :-> S_ n) -> Either String (Generator k n)
-mkGen gen = if (any isIdentity (elems gen)) then Left "identity included" else Right (Gen gen)
+mkGen gen = Gen <$> maybeEither "identity included" (traverse maybeNonIdentity gen) 
+
+  -- if (any isIdentity (elems gen)) then Left "identity included" else Right (Gen gen)
 
 
-
+-- | 
 isFixedBy :: Z_ n -> S_ n -> Bool
 β `isFixedBy` g = β == (β ↙ g)
 
 -- | result = (fixed, first unfixed, rest unfixed)
 splitFixed :: (KnownNat n) => Generator k n -> ([Z_ n], Z_ n, [Z_ n])
-splitFixed gen = let (intrvl1',intrvl2') = partition (\β -> (all (β `isFixedBy`) . elems . unGen) gen) intrvl2
+splitFixed gen = let (intrvl1',intrvl2') = partition (\β -> (all (β `isFixedBy`) . permListFromGen) gen) intrvl2
                  in (intrvl1 ++ intrvl1', n1, intrvl2' )
   where ps = (elems . unGen) gen  
-        n1 = (minimum . map (fromJust . firstUnfixed) ) ps 
+        n1 = (minimum . map firstUnfixed') ps 
         intrvl1 = if n1 == 1 then [] else [1..n1-1] 
         intrvl2 = if n1 == order then [] else [n1+1..order]
 
-
+-- | 
 chooseUnfixed :: (KnownNat n) => Generator k n -> Z_ n 
 chooseUnfixed = snd3 . splitFixed 
 
 -- k is |generators|, n is degree
 
+-- |
 type Base (k :: Nat) (n :: Nat) = k ▸ n
 
-
+-- |
 newtype BSGS (k :: Nat) (n :: Nat) = BSGS (Base k n, Z_ k :-> [S_ n])
 
 -- makeBSGSFromSGS :: Base k n -> H.HashSet (S_ n) -> BSGS k n 

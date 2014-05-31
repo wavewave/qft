@@ -9,14 +9,9 @@ import Data.Array
 import Data.Fin1
 import Data.Permute
 -- 
-import Prelude hiding ((^^))
 
 main = do 
   putStrLn "permutation test"
-  let -- arr1 = listArray (1,5) [1,2,4,3,5] :: 5 ▸ 5
-      -- arr2 = listArray (1,5) [1,3,2,4,5] :: 5 ▸ 5
-
-
   r <- runEitherT $ do 
     p1 <- hoistEither (fromTuple (1,2,4,3,5)) -- (mkPerm arr1)
     p2 <- hoistEither (fromTuple (1,3,2,4,5)) -- (mkPerm arr2)

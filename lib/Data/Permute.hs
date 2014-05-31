@@ -24,7 +24,7 @@ import           Data.Hashable
 -- import qualified Data.HashMap.Strict as HM
 import           Data.List (partition,find)
 -- import qualified Data.Map as M
-import           Data.Maybe (isNothing)
+import           Data.Maybe (fromJust, isNothing)
 import           Data.STRef (newSTRef, readSTRef, writeSTRef) 
 
 -- 
@@ -108,7 +108,8 @@ mkPerm arr= runST action
                          Just _ -> left "not reversible"
                          Nothing -> lift (writeArray rarr r (Just i))
                      F.forM_ [i1..i2] $ \r -> 
-                       maybe (left "not reversible") (\i -> lift (writeArray rarr' r i)) =<< lift (readArray rarr r)
+                       maybe (left "not reversible") (\i -> lift (writeArray rarr' r i)) 
+                         =<< lift (readArray rarr r)
                      rarr'' <- lift (freeze rarr')
                      mval <- lift (readSTRef mref)
                      return (Perm arr rarr'' mval)
@@ -160,13 +161,17 @@ isFixedBy :: Z_ n -> S_ n -> Bool
 β `isFixedBy` g = β == (β ↙ g)
 
 -- | result = (fixed, first unfixed, rest unfixed)
-splitFixed :: (KnownNat n) => Generator k n -> ([Z_ n], [Z_ n])
-splitFixed gen = partition (\β -> (all (β `isFixedBy`) . elems . unGen) gen) interval
---  where effinterval p = (fst,
+splitFixed :: (KnownNat n) => Generator k n -> ([Z_ n], Z_ n, [Z_ n])
+splitFixed gen = let (intrvl1',intrvl2') = partition (\β -> (all (β `isFixedBy`) . elems . unGen) gen) intrvl2
+                 in (intrvl1 ++ intrvl1', n1, intrvl2' )
+  where ps = (elems . unGen) gen  
+        n1 = (minimum . map (fromJust . firstUnfixed) ) ps 
+        intrvl1 = if n1 == 1 then [] else [1..n1-1] 
+        intrvl2 = if n1 == order then [] else [n1+1..order]
 
 
 chooseUnfixed :: (KnownNat n) => Generator k n -> Z_ n 
-chooseUnfixed = head . snd . splitFixed 
+chooseUnfixed = snd3 . splitFixed 
 
 -- k is |generators|, n is degree
 

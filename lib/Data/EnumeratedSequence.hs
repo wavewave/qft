@@ -59,6 +59,10 @@ singleton x = EnumSeq (S.singleton x)
 (<|) :: a -> EnumSeq n a -> EnumSeq (n+1) a
 x <| EnumSeq xs = EnumSeq (x S.<| xs)
 
+infixr 5 ><
+infixr 5 <|, :<
+infixl 5 |>, :>
+
 (|>) :: EnumSeq n a -> a -> EnumSeq (n+1) a
 EnumSeq xs |> x = EnumSeq (xs S.|> x)
 

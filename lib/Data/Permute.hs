@@ -29,6 +29,7 @@ import           Data.Maybe (isNothing)
 import           Data.STRef (newSTRef, readSTRef, writeSTRef) 
 import           Data.Traversable
 -- 
+import Data.EnumeratedSequence
 import Data.Fin1
 import Util
 
@@ -158,16 +159,17 @@ mult p1 p2 = let (i1,i2) = bounds (forward p1)
 (·) :: S_ n -> S_ n -> S_ n 
 (·) = mult
 
-newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: Z_ k :-> NonIdPerm n }
+newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: EnumSeq k (NonIdPerm n) }
+-- { unGen :: Z_ k :-> NonIdPerm n }
 
-permListFromGen :: Generator k n -> [ S_ n ]
-permListFromGen = map toPermutation . elems . unGen
+permListFromGen :: Generator k n -> [S_ n]
+permListFromGen = F.toList . fmap toPermutation . unGen
 
 isIdentity :: (KnownNat n) => S_ n -> Bool
 isIdentity = maybe True (const False) . firstUnfixed 
 -- all (\i -> (forward p ! i) == i) interval
 
-mkGen :: (KnownNat n) => (Z_ k :-> S_ n) -> Either String (Generator k n)
+mkGen :: (KnownNat n) => EnumSeq k (S_ n) -> Either String (Generator k n)
 mkGen gen = Gen <$> maybeEither "identity included" (traverse maybeNonIdentity gen) 
 
   -- if (any isIdentity (elems gen)) then Left "identity included" else Right (Gen gen)
@@ -181,7 +183,7 @@ isFixedBy :: Z_ n -> S_ n -> Bool
 splitFixed :: (KnownNat n) => Generator k n -> ([Z_ n], Z_ n, [Z_ n])
 splitFixed gen = let (intrvl1',intrvl2') = partition (\β -> (all (β `isFixedBy`) . permListFromGen) gen) intrvl2
                  in (intrvl1 ++ intrvl1', n1, intrvl2' )
-  where ps = (elems . unGen) gen  
+  where ps = (F.toList . unGen) gen  
         n1 = (minimum . map firstUnfixed') ps 
         intrvl1 = if n1 == 1 then [] else [1..n1-1] 
         intrvl2 = if n1 == order then [] else [n1+1..order]

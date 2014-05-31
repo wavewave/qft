@@ -5,7 +5,8 @@
 
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Either
-import Data.Array
+-- import Data.Array
+import Data.EnumeratedSequence
 import Data.Fin1
 import Data.Permute
 -- 
@@ -18,7 +19,7 @@ main = do
     let  p = p1 · p2 
          g = 2
 
-    (gen :: Generator 2 5) <- hoistEither (mkGen (listArray (1,2) [p, p1]))
+    (gen :: Generator 2 5) <- hoistEither (mkGen ( p <| p1 <| empty ))
                   
     liftIO $ do 
       print (firstUnfixed p1)

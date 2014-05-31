@@ -86,10 +86,11 @@ Library
                    transformers,
                    unordered-containers
   Exposed-Modules: 
+                   Data.EnumeratedSequence
+                   Data.Fin1
                    Data.Partition
                    Data.Permute
                    Data.SeqZipper
-                   Data.Fin1
                    Diagram
                    Graph
                    McKay

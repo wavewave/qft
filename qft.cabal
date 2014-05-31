@@ -82,11 +82,12 @@ Library
                    hashable,
                    mtl,
                    process,
-                   -- singletons,
+                   singletons,
                    transformers,
                    unordered-containers
   Exposed-Modules: 
                    Data.EnumeratedSequence
+                   Data.EnumeratedSeqZipper
                    Data.Fin1
                    Data.Partition
                    Data.Permute

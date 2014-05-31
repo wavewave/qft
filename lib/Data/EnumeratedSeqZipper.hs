@@ -1,29 +1,105 @@
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DeriveFoldable #-} 
-{-# LANGUAGE DeriveTraversable #-}
-
-module Data.SeqZipper where
-
-import Control.Applicative hiding (empty)
-import Data.Foldable
-import Data.Monoid
-import Data.Sequence 
-import Data.Traversable
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
 
 
+module Data.EnumeratedSeqZipper where
+
+import GHC.TypeLits
+--
+-- import Control.Applicative hiding (empty)
+-- import Data.Foldable
+-- import Data.Monoid ((<>))
+-- import Data.Sequence 
+-- import Data.Traversable
+--
+import           Data.EnumeratedSequence hiding (singleton)
+-- import qualified Data.EnumeratedSequence as N (singleton)
 -- 
-import Prelude hiding (zipWith, length, splitAt)
-
--- | 
-type NonEmptyList a = (a,[a])
-
--- | 
-type NonEmptySeq a = (a, Seq a)
+-- import Prelude hiding (zipWith, length, splitAt)
 
 -- |
-newtype SeqZipper a = SZ { unSZ :: (a, (Seq a,Seq a)) } 
+data NSeqZipper (n :: Nat) a where
+  --        current   lefts        rights
+  NSZ :: a -> NSeq m a -> NSeq n a -> NSeqZipper (m+n+1) a
 
+
+-- |
+singleton :: a -> NSeqZipper 1 a  
+singleton x = NSZ x empty empty
+
+{-  
+-- | 
+first :: forall m n a. NSeqZipper n a -> NSeqZipper n a 
+first (NSZ x ls rs) = ls
+    case viewl ls of 
+      EmptyL -> orig
+      -- l :< ls' -> NSZ l empty (ls' <> (x <| rs))
+-}
+
+{-
+-- |
+last :: SeqZipper a -> SeqZipper a 
+last orig@(SZ (x,(x1s,x2s))) = 
+  case viewr x2s of 
+    EmptyR -> orig
+    zs :> z -> SZ (z,((x1s |> x) `mappend` zs , empty))
+
+-- | 
+moveL :: SeqZipper a -> Maybe (SeqZipper a)
+moveL (SZ (x,(x1s,x2s))) = 
+  case viewr x1s of
+    EmptyR -> Nothing 
+    zs :> z -> Just (SZ (z,(zs,x<|x2s)))
+
+-- |
+moveR :: SeqZipper a -> Maybe (SeqZipper a) 
+moveR (SZ (x,(x1s,x2s))) = 
+  case viewl x2s of 
+    EmptyL -> Nothing
+    z :< zs -> Just (SZ (z,(x1s|>x,zs)))
+
+------------------------
+-- fetch focused item -- 
+------------------------
+
+-- | 
+current :: SeqZipper a -> a 
+current (SZ (x,(_,_))) = x
+
+-- | 
+prev :: SeqZipper a -> Maybe a 
+prev = fmap current . moveLeft
+
+-- |
+next :: SeqZipper a -> Maybe a 
+next = fmap current . moveRight
+
+------------------------------
+-- operation on focues item --
+------------------------------
+
+-- |
+replace :: a -> SeqZipper a -> SeqZipper a 
+replace y (SZ (_x,zs)) = SZ (y,zs)
+
+-- |
+delete :: SeqZipper a -> Maybe (SeqZipper a)
+delete (SZ (_,(xs,ys))) = 
+  case viewl ys of 
+    EmptyL -> case viewr xs of 
+                EmptyR -> Nothing 
+                zs :> z -> Just (SZ (z,(zs,ys)))
+    z :< zs -> Just (SZ (z,(xs,zs)))
+-}
+
+-- toSeq :: SeqZipper a -> Seq a
+-- toSeq (SZ (x,(x1s,x2s))) = x1s >< (x <| x2s)
+
+
+{- 
 -- |
 deriving instance Functor SeqZipper
 
@@ -39,16 +115,13 @@ instance Applicative SeqZipper where
 deriving instance Traversable SeqZipper 
 
 -- |
-singletonSZ :: a -> SeqZipper a  
-singletonSZ x = SZ (x, (empty,empty))
-
--- |
-lengthSZ :: SeqZipper a -> Int 
+lengthSZ :: SeqZipper n a -> Int 
 lengthSZ (SZ (_x, (x1s,x2s))) = length x1s + length x2s + 1 
 
 -- |
 currIndex :: SeqZipper a -> Int
 currIndex (SZ (_x, (x1s,_x2s))) = length x1s 
+
 
 -- |
 appendGoLast :: SeqZipper a -> a -> SeqZipper a
@@ -63,19 +136,6 @@ chopFirst (SZ (y,(y1s,y2s))) =
                 z :< zs -> Just (SZ (z,(empty,zs)))
     _z :< zs -> Just (SZ (y,(zs,y2s)))
     
--- | 
-moveLeft :: SeqZipper a -> Maybe (SeqZipper a)
-moveLeft (SZ (x,(x1s,x2s))) = 
-  case viewr x1s of
-    EmptyR -> Nothing 
-    zs :> z -> Just (SZ (z,(zs,x<|x2s)))
-
--- |
-moveRight :: SeqZipper a -> Maybe (SeqZipper a) 
-moveRight (SZ (x,(x1s,x2s))) = 
-  case viewl x2s of 
-    EmptyL -> Nothing
-    z :< zs -> Just (SZ (z,(x1s|>x,zs)))
 
 -- |
 moveTo :: Int -> SeqZipper a -> Maybe (SeqZipper a) 
@@ -93,53 +153,7 @@ moveTo n orig@(SZ (x,(x1s,x2s))) =
           | otherwise = error "error in moveTo"
   in res 
 
--- | 
-goFirst :: SeqZipper a -> SeqZipper a 
-goFirst orig@(SZ (x,(x1s,x2s))) =
-  case viewl x1s of 
-    EmptyL -> orig
-    z :< zs -> SZ (z,(empty, zs `mappend` (x <| x2s)))  
-
--- |
-goLast :: SeqZipper a -> SeqZipper a 
-goLast orig@(SZ (x,(x1s,x2s))) = 
-  case viewr x2s of 
-    EmptyR -> orig
-    zs :> z -> SZ (z,((x1s |> x) `mappend` zs , empty))
- 
--- | 
-current :: SeqZipper a -> a 
-current (SZ (x,(_,_))) = x
-
--- | 
-prev :: SeqZipper a -> Maybe a 
-prev = fmap current . moveLeft
-
--- |
-next :: SeqZipper a -> Maybe a 
-next = fmap current . moveRight
-
--- |
-replace :: a -> SeqZipper a -> SeqZipper a 
-replace y (SZ (_x,zs)) = SZ (y,zs)
-
--- |
-deleteCurrent :: SeqZipper a -> Maybe (SeqZipper a)
-deleteCurrent (SZ (_,(xs,ys))) = 
-  case viewl ys of 
-    EmptyL -> case viewr xs of 
-                EmptyR -> Nothing 
-                zs :> z -> Just (SZ (z,(zs,ys)))
-    z :< zs -> Just (SZ (z,(xs,zs)))
 
 
-fromNonEmptyList :: NonEmptyList a -> SeqZipper a 
-fromNonEmptyList (x,xs) = SZ (x, (empty,fromList xs) )
 
-fromNonEmptySeq :: NonEmptySeq a -> SeqZipper a
-fromNonEmptySeq (x,xs) = SZ (x, (empty,xs))
-
-
-toSeq :: SeqZipper a -> Seq a
-toSeq (SZ (x,(x1s,x2s))) = x1s >< (x <| x2s)
-
+-}

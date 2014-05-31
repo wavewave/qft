@@ -159,7 +159,7 @@ mult p1 p2 = let (i1,i2) = bounds (forward p1)
 (·) :: S_ n -> S_ n -> S_ n 
 (·) = mult
 
-newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: EnumSeq k (NonIdPerm n) }
+newtype Generator (k :: Nat) (n :: Nat) = Gen { unGen :: NSeq k (NonIdPerm n) }
 -- { unGen :: Z_ k :-> NonIdPerm n }
 
 permListFromGen :: Generator k n -> [S_ n]
@@ -169,7 +169,7 @@ isIdentity :: (KnownNat n) => S_ n -> Bool
 isIdentity = maybe True (const False) . firstUnfixed 
 -- all (\i -> (forward p ! i) == i) interval
 
-mkGen :: (KnownNat n) => EnumSeq k (S_ n) -> Either String (Generator k n)
+mkGen :: (KnownNat n) => NSeq k (S_ n) -> Either String (Generator k n)
 mkGen gen = Gen <$> maybeEither "identity included" (traverse maybeNonIdentity gen) 
 
   -- if (any isIdentity (elems gen)) then Left "identity included" else Right (Gen gen)

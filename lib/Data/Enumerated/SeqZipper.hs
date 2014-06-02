@@ -20,8 +20,11 @@ import Data.Type.Equality
 --
 import           Data.Enumerated.Sequence hiding (singleton)
 -- import qualified Data.EnumeratedSequence as N (singleton)
+import           Data.PeanoNat
 -- 
+
 -- import Prelude hiding (zipWith, length, splitAt)
+
 
 -- |
 data NSeqZipper' (m :: MNat) (n :: MNat) a where

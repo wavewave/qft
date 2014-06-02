@@ -91,6 +91,7 @@ Library
                    Data.Enumerated.SeqZipper
                    Data.Fin1
                    Data.Partition
+                   Data.PeanoNat
                    Data.Permute
                    Data.SeqZipper
                    Diagram

@@ -27,7 +27,7 @@ import           Data.PeanoNat
 
 
 -- |
-data NSeqZipper' (m :: MNat) (n :: MNat) a where
+data NSeqZipper' (m :: PNat) (n :: PNat) a where
   --        current   lefts        rights
   NSZ :: a -> NSeq' m a -> NSeq' n a -> NSeqZipper' m n a
 
@@ -41,35 +41,35 @@ singleton x = NSZ x empty empty
  
 -- | 
 toFirst :: forall m n a . (SingI m, SingI n) => 
-         NSeqZipper' m n a -> NSeqZipper' MZero (m :+: n) a 
+         NSeqZipper' m n a -> NSeqZipper' PZero (m :+: n) a 
 toFirst z@(NSZ x ls rs) = 
   case sing :: Sing m of
-    MyZero -> z
-    MySucc p -> case viewl (MySucc p) ls of 
+    PSZero -> z
+    PSSucc p -> case viewl (PSSucc p) ls of 
                   y :< ys -> gcastWith (plus_succ_r p (sing :: Sing n)) (NSZ y empty (ys >< (x <| rs))) 
 
 
 -- |
 toLast :: forall m n a. (SingI m, SingI n) => 
-          NSeqZipper' m n a -> NSeqZipper' (m :+: n) MZero a 
+          NSeqZipper' m n a -> NSeqZipper' (m :+: n) PZero a 
 toLast z@(NSZ x ls rs) = 
   case sing :: Sing n of
-    MyZero -> gcastWith (plus_id_r (sing :: Sing m)) z
-    MySucc p -> case viewr (MySucc p) rs of
+    PSZero -> gcastWith (plus_id_r (sing :: Sing m)) z
+    PSSucc p -> case viewr (PSSucc p) rs of
                   ys :> y -> gcastWith (plus_succ_r p (sing :: Sing m)) $ 
                              NSZ y (ls >< (x <| ys)) empty
 
 -- | 
 toLeft :: forall m n a. (SingI m, SingI n) => 
-          NSeqZipper' (MSucc m) n a -> NSeqZipper' m (MSucc n) a
-toLeft (NSZ x ls rs) = let lview = viewr (sing :: Sing (MSucc m)) ls  
+          NSeqZipper' (PSucc m) n a -> NSeqZipper' m (PSucc n) a
+toLeft (NSZ x ls rs) = let lview = viewr (sing :: Sing (PSucc m)) ls  
                        in case lview of
                             ys :> y -> NSZ y ys (x <| rs) 
 
 -- |
 toRight :: forall m n a. (SingI m, SingI n) => 
-           NSeqZipper' m (MSucc n) a -> NSeqZipper' (MSucc m) n a
-toRight (NSZ x ls rs) = let rview = viewl (sing :: Sing (MSucc n)) rs
+           NSeqZipper' m (PSucc n) a -> NSeqZipper' (PSucc m) n a
+toRight (NSZ x ls rs) = let rview = viewl (sing :: Sing (PSucc n)) rs
                         in case rview of 
                              y :< ys -> NSZ y (ls |> x) ys
 
@@ -83,11 +83,11 @@ current :: NSeqZipper' m n a -> a
 current (NSZ x _ _) = x
 
 -- | 
-prev :: (SingI m, SingI n) => NSeqZipper' (MSucc m) n a -> a 
+prev :: (SingI m, SingI n) => NSeqZipper' (PSucc m) n a -> a 
 prev = current . toLeft
 
 -- |
-next :: (SingI m, SingI n) => NSeqZipper' m (MSucc n) a -> a
+next :: (SingI m, SingI n) => NSeqZipper' m (PSucc n) a -> a
 next = current . toRight
 
 

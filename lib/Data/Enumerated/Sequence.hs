@@ -31,7 +31,7 @@ import qualified Data.Sequence as S
 import Data.PeanoNat
 
 
-newtype NSeq' (n :: MNat) a = NSeq (S.Seq a)
+newtype NSeq' (n :: PNat) a = NSeq (S.Seq a)
 
 type NSeq (n :: Nat) = NSeq' (FromNat n) 
 
@@ -90,37 +90,37 @@ empty = NSeq S.empty
 singleton :: a -> NSeq 1 a
 singleton x = NSeq (S.singleton x)
 
-(<|) :: a -> NSeq' n a -> NSeq' (MSucc n) a
+(<|) :: a -> NSeq' n a -> NSeq' (PSucc n) a
 x <| NSeq xs = NSeq (x S.<| xs)
 
 infixr 5 ><
 infixr 5 <|
 infixl 5 |>
 
-(|>) :: forall n a. NSeq' n a -> a -> NSeq' (MSucc n) a
+(|>) :: forall n a. NSeq' n a -> a -> NSeq' (PSucc n) a
 NSeq xs |> x = NSeq (xs S.|> x)
 
 (><) :: forall m n a. NSeq' m a -> NSeq' n a -> NSeq' (m :+: n) a
 NSeq xs >< NSeq ys = NSeq (xs S.>< ys)
 
-data ViewL' (n :: MNat) a where
-  EmptyL :: ViewL' MZero a
-  (:<) :: a -> NSeq' n a -> ViewL' (MSucc n) a
+data ViewL' (n :: PNat) a where
+  EmptyL :: ViewL' PZero a
+  (:<) :: a -> NSeq' n a -> ViewL' (PSucc n) a
  
 viewl :: Sing n -> NSeq' n a -> ViewL' n a
-viewl MyZero _  = EmptyL
-viewl (MySucc _) (NSeq s) =  
+viewl PSZero _  = EmptyL
+viewl (PSSucc _) (NSeq s) =  
     case S.viewl s of 
       S.EmptyL -> error "viewl: impossible" -- totality guaranteed. 
       x S.:< xs -> x :< NSeq xs
 
-data ViewR' (n :: MNat) a where
-  EmptyR :: ViewR' MZero a
-  (:>) :: NSeq' n a -> a -> ViewR' (MSucc n) a
+data ViewR' (n :: PNat) a where
+  EmptyR :: ViewR' PZero a
+  (:>) :: NSeq' n a -> a -> ViewR' (PSucc n) a
 
 viewr :: Sing n -> NSeq' n a -> ViewR' n a
-viewr MyZero _ = EmptyR
-viewr (MySucc _) (NSeq s) = 
+viewr PSZero _ = EmptyR
+viewr (PSSucc _) (NSeq s) = 
     case S.viewr s of
       S.EmptyR -> error "viewr: impossible" -- totality guaranteed
       xs S.:> x -> NSeq xs :> x

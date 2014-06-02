@@ -14,6 +14,7 @@ import GHC.TypeLits
 -- import Data.Foldable
 -- import Data.Monoid ((<>))
 -- import Data.Sequence 
+import           Data.Singletons
 -- import Data.Traversable
 import Data.Type.Equality
 --
@@ -36,7 +37,7 @@ singleton x = NSZ x empty empty
  
  
 -- | 
-first :: MyNat m -> MyNat n -> NSeqZipper' m n a -> NSeqZipper' MZero (m :+: n) a 
+first :: Sing m -> Sing n -> NSeqZipper' m n a -> NSeqZipper' MZero (m :+: n) a 
 first MyZero _ z = z 
 first (MySucc p) n (NSZ x ls rs) = 
     case viewl (MySucc p) ls of 

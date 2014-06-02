@@ -21,6 +21,7 @@ import Control.Applicative
 import Control.Monad (MonadPlus)
 import qualified Data.Foldable as F
 import Data.Monoid (Monoid)
+import           Data.Singletons
 import Data.Traversable
 import qualified Data.Sequence as S
 -- import           Data.Proxy
@@ -35,9 +36,9 @@ type family n1 :+: n2 where
   MZero :+: n2 = n2
   (MSucc n1') :+: n2 = MSucc (n1' :+: n2)
 
-data MyNat :: MNat -> * where
-  MyZero :: MyNat MZero
-  MySucc :: MyNat n -> MyNat (MSucc n)
+data instance Sing (a :: MNat) where
+  MyZero :: Sing MZero
+  MySucc :: Sing n -> Sing (MSucc n)
 
 type family FromNat (n :: Nat) where
   FromNat 0 = MZero
@@ -45,11 +46,11 @@ type family FromNat (n :: Nat) where
 
 
 
-plus_id_r :: MyNat n -> ((n :+: MZero) :~: n)
+plus_id_r :: forall (n :: MNat) . Sing n -> ((n :+: MZero) :~: n)
 plus_id_r MyZero = Refl
 plus_id_r (MySucc n) = gcastWith (plus_id_r n) Refl  
 
-plus_succ_r :: MyNat n1 -> MyNat n2 -> (n1 :+: (MSucc n2)) :~: (MSucc (n1 :+: n2))
+plus_succ_r :: forall (n1 :: MNat) (n2 :: MNat) . Sing n1 -> Sing n2 -> (n1 :+: (MSucc n2)) :~: (MSucc (n1 :+: n2))
 plus_succ_r MyZero _  = Refl
 plus_succ_r (MySucc n1) n2 = gcastWith (plus_succ_r n1 n2) Refl
 
@@ -132,7 +133,7 @@ data ViewL' (n :: MNat) a where
   EmptyL :: ViewL' MZero a
   (:<) :: a -> NSeq' n a -> ViewL' (MSucc n) a
  
-viewl :: MyNat n -> NSeq' n a -> ViewL' n a
+viewl :: Sing n -> NSeq' n a -> ViewL' n a
 viewl MyZero _  = EmptyL
 viewl (MySucc _) (NSeq s) =  
     case S.viewl s of 
@@ -143,7 +144,7 @@ data ViewR' (n :: MNat) a where
   EmptyR :: ViewR' MZero a
   (:>) :: NSeq' n a -> a -> ViewR' (MSucc n) a
 
-viewr :: MyNat n -> NSeq' n a -> ViewR' n a
+viewr :: Sing n -> NSeq' n a -> ViewR' n a
 viewr MyZero _ = EmptyR
 viewr (MySucc _) (NSeq s) = 
     case S.viewr s of

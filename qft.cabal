@@ -86,8 +86,9 @@ Library
                    transformers,
                    unordered-containers
   Exposed-Modules: 
-                   Data.EnumeratedSequence
-                   Data.EnumeratedSeqZipper
+                   Data.Enumerated.Partition
+                   Data.Enumerated.Sequence
+                   Data.Enumerated.SeqZipper
                    Data.Fin1
                    Data.Partition
                    Data.Permute

@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Data.EnumeratedSeqZipper where
+module Data.Enumerated.SeqZipper where
 
 import GHC.TypeLits
 --
@@ -18,7 +18,7 @@ import           Data.Singletons
 -- import Data.Traversable
 import Data.Type.Equality
 --
-import           Data.EnumeratedSequence hiding (singleton)
+import           Data.Enumerated.Sequence hiding (singleton)
 -- import qualified Data.EnumeratedSequence as N (singleton)
 -- 
 -- import Prelude hiding (zipWith, length, splitAt)

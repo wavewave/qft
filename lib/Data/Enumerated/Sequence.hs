@@ -13,7 +13,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 
-module Data.EnumeratedSequence where
+module Data.Enumerated.Sequence where
 
 import GHC.TypeLits
 --

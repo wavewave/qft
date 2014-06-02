@@ -29,7 +29,7 @@ import           Data.Maybe (isNothing)
 import           Data.STRef (newSTRef, readSTRef, writeSTRef) 
 import           Data.Traversable
 -- 
-import Data.EnumeratedSequence
+import Data.Enumerated.Sequence
 import Data.Fin1
 import Util
 

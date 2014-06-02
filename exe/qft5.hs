@@ -6,7 +6,7 @@
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Either
 -- import Data.Array
-import Data.EnumeratedSequence
+import Data.Enumerated.Sequence
 import Data.Fin1
 import Data.Permute
 -- 

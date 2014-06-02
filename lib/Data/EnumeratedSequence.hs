@@ -40,6 +40,12 @@ data instance Sing (a :: MNat) where
   MyZero :: Sing MZero
   MySucc :: Sing n -> Sing (MSucc n)
 
+instance SingI MZero where 
+  sing = MyZero 
+
+instance (SingI n) => SingI (MSucc n) where
+  sing = MySucc (sing :: Sing n)
+
 type family FromNat (n :: Nat) where
   FromNat 0 = MZero
   FromNat n = MSucc (FromNat (n-1))

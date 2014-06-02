@@ -37,12 +37,26 @@ singleton x = NSZ x empty empty
  
  
 -- | 
-first :: Sing m -> Sing n -> NSeqZipper' m n a -> NSeqZipper' MZero (m :+: n) a 
-first MyZero _ z = z 
+first :: forall m n a . (SingI m, SingI n) => 
+         NSeqZipper' m n a -> NSeqZipper' MZero (m :+: n) a 
+first z@(NSZ x ls rs) = 
+  case sing :: Sing m of
+    MyZero -> z
+    MySucc p -> case viewl (MySucc p) ls of 
+                  y :< ys -> gcastWith (plus_succ_r p (sing :: Sing n)) (NSZ y empty (ys >< (x <| rs))) 
+
+
+--  :: NSeq' (m :+: n) a) 
+
+                    
+{- 
+
+
+MyZero _ z = z 
 first (MySucc p) n (NSZ x ls rs) = 
     case viewl (MySucc p) ls of 
       y :< ys -> gcastWith (plus_succ_r p n) (NSZ y empty (ys >< (x <| rs))) --  :: NSeq' (m :+: n) a) 
-
+-}
 
 {-
 -- |

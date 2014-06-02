@@ -29,9 +29,10 @@ import           Data.Maybe (isNothing)
 import           Data.STRef (newSTRef, readSTRef, writeSTRef) 
 import           Data.Traversable
 -- 
-import Data.Enumerated.Sequence
-import Data.Fin1
-import Util
+import           Data.Enumerated.Sequence
+import           Data.Fin1
+import           Data.FromTuple
+import           Util
 
 type m :->  n = Array m n 
 
@@ -66,10 +67,6 @@ maybeNonIdentity (Perm f b mβ) = NonIdPerm f b <$> mβ
 toPermutation :: NonIdPerm n -> S_ n
 toPermutation (NonIdPerm f b β) = Perm f b (Just β) 
 
-class FromTuple a where 
-  type Tuple a :: * 
-  fromTuple :: Tuple a -> Either String a
-  -- toTuple :: a -> Tuple a 
 
 instance FromTuple (S_ 2) where
   type Tuple (S_ 2) = (Z_ 2, Z_ 2)

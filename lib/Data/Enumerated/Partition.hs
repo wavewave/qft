@@ -1,11 +1,30 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
 
 module Data.Enumerated.Partition where
+
+import Data.Enumerated.Sequence
+-- import Data.FromTuple
+import Data.PeanoNat
+
+data Partition (k :: [ PNat ]) a where
+  Nil :: Partition '[] a 
+  Cons :: NSeq' (PSucc n) a -> Partition ns a -> Partition ((PSucc n) ': ns) a
+
+infixr 5 `Cons`
+
+instance Show (Partition '[] a) where
+  show _ = "Nil"
+
+instance (Show a, Show (Partition ns a)) => Show (Partition (n ': ns) a) where
+  show (x `Cons` xs) = show x ++ " : " ++ show xs 
 
 
 {-

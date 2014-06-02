@@ -19,8 +19,8 @@ import           Data.PeanoNat
 
 -- |
 data NSeqZipper' (m :: PNat) (n :: PNat) a where
-  --     current    lefts        rights
-  NSZ ::       a -> NSeq' m a -> NSeq' n a -> NSeqZipper' m n a
+  -- |  NSZ current lefts rights
+  NSZ :: a -> NSeq' m a -> NSeq' n a -> NSeqZipper' m n a
 
 -- | to use type-level literal natural number
 type NSeqZipper (m :: Nat) (n :: Nat) = NSeqZipper' (FromNat m) (FromNat n) 
@@ -91,16 +91,21 @@ modify f (NSZ x ls rs) = NSZ (f x) ls rs
 replace :: a -> NSeqZipper' m n a -> NSeqZipper' m n a 
 replace x = modify (const x)
 
-{- difficult
--- |
-delete :: forall m n m' n' a. (SingI m, SingI n, SingI m', SingI n') => NSeqZipper' m n a -> NSeqZipper' m' n' a
-delete (NSZ _ ls rs) = 
-  case viewl ys of 
-    EmptyL -> case viewr xs of 
-                EmptyR -> Nothing 
-                zs :> z -> Just (SZ (z,(zs,ys)))
-    z :< zs -> Just (SZ (z,(xs,zs)))
--}
+-- | delete current item and focus next left item
+deleteToLeft :: forall m n a. (SingI m) => NSeqZipper' (PSucc m) n a -> NSeqZipper' m n a
+deleteToLeft (NSZ _ ls rs) = let lview = viewr (sing :: Sing (PSucc m)) ls  
+                             in case lview of
+                                  ys :> y -> NSZ y ys rs 
+
+
+
+
+-- | delete current item and focus next right item
+deleteToRight :: forall m n a. (SingI n) => NSeqZipper' m (PSucc n) a -> NSeqZipper' m n a
+deleteToRight (NSZ _ ls rs) = let rview = viewl (sing :: Sing (PSucc n)) rs
+                              in case rview of 
+                                   y :< ys -> NSZ y ls ys
+
 
 -- toSeq :: SeqZipper a -> Seq a
 -- toSeq (SZ (x,(x1s,x2s))) = x1s >< (x <| x2s)

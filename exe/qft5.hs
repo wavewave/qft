@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE PostfixOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
@@ -6,8 +7,12 @@
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Either
 -- import Data.Array
+--
+import Data.Enumerated.Partition
 import Data.Enumerated.Sequence
 import Data.Fin1
+import Data.FromTuple
+import Data.PeanoNat
 import Data.Permute
 -- 
 
@@ -26,6 +31,16 @@ main = do
       print (firstUnfixed p)
       print (chooseUnfixed gen)
       print (splitFixed gen)
+  
+    -- NSeq test
+    lst1 :: NSeq 2 Int <- hoistEither (fromTuple (1,2))
+    lst2 :: NSeq 3 Int <- hoistEither (fromTuple (3,4,5))
+    liftIO $ do 
+      print lst1
+      print lst2
+      print (Nil :: Partition '[] Int) 
+      print (singleton 0 `Cons` lst1 `Cons` lst2 `Cons` Nil :: Partition [ FromNat 1 , FromNat 2, FromNat 3] Int)
+
     return ()
 
   either print (const (return ())) r  

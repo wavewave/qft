@@ -90,6 +90,7 @@ Library
                    Data.Enumerated.Sequence
                    Data.Enumerated.SeqZipper
                    Data.Fin1
+                   Data.FromTuple
                    Data.Partition
                    Data.PeanoNat
                    Data.Permute

@@ -24,13 +24,35 @@ import           Data.Singletons
 import           Data.Traversable
 import qualified Data.Sequence as S
 --
-import Data.PeanoNat
+import           Data.FromTuple
+import           Data.PeanoNat
 
 -- | 
 newtype NSeq' (n :: PNat) a = NSeq (S.Seq a)
 
+
 -- | to use type-level literal natural number
 type NSeq (n :: Nat) = NSeq' (FromNat n) 
+
+-- -- | smart constructor for NSeq 
+-- mkNSeq :: 
+
+instance FromTuple (NSeq' (PSucc (PSucc PZero)) Int) where
+  type Tuple (NSeq' (PSucc (PSucc PZero)) Int) = (Int, Int) 
+  fromTuple (a,b) = Right (NSeq (a S.<| b S.<| S.empty))
+
+instance FromTuple (NSeq' (PSucc (PSucc (PSucc PZero))) Int) where
+  type Tuple (NSeq' (PSucc (PSucc (PSucc PZero))) Int) = (Int, Int,Int) 
+  fromTuple (a,b,c) = Right (NSeq (a S.<| b S.<| c S.<| S.empty))
+
+instance FromTuple (NSeq' (PSucc (PSucc (PSucc (PSucc PZero)))) Int) where
+  type Tuple (NSeq' (PSucc (PSucc (PSucc (PSucc PZero)))) Int) = (Int, Int, Int, Int) 
+  fromTuple (a,b,c,d) = Right (NSeq (a S.<| b S.<| c S.<| d S.<| S.empty))
+
+instance FromTuple (NSeq' (PSucc (PSucc (PSucc (PSucc (PSucc PZero))))) Int) where
+  type Tuple (NSeq' (PSucc (PSucc (PSucc (PSucc (PSucc PZero))))) Int) = (Int, Int, Int, Int, Int) 
+  fromTuple (a,b,c,d,e) = Right (NSeq (a S.<| b S.<| c S.<| d S.<| e S.<| S.empty))
+
 
 deriving instance Functor (NSeq' n)
 

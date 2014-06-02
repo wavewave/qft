@@ -37,82 +37,84 @@ singleton x = NSZ x empty empty
  
  
 -- | 
-first :: forall m n a . (SingI m, SingI n) => 
+toFirst :: forall m n a . (SingI m, SingI n) => 
          NSeqZipper' m n a -> NSeqZipper' MZero (m :+: n) a 
-first z@(NSZ x ls rs) = 
+toFirst z@(NSZ x ls rs) = 
   case sing :: Sing m of
     MyZero -> z
     MySucc p -> case viewl (MySucc p) ls of 
                   y :< ys -> gcastWith (plus_succ_r p (sing :: Sing n)) (NSZ y empty (ys >< (x <| rs))) 
 
 
---  :: NSeq' (m :+: n) a) 
-
-                    
-{- 
-
-
-MyZero _ z = z 
-first (MySucc p) n (NSZ x ls rs) = 
-    case viewl (MySucc p) ls of 
-      y :< ys -> gcastWith (plus_succ_r p n) (NSZ y empty (ys >< (x <| rs))) --  :: NSeq' (m :+: n) a) 
--}
-
-{-
 -- |
-last :: SeqZipper a -> SeqZipper a 
-last orig@(SZ (x,(x1s,x2s))) = 
-  case viewr x2s of 
-    EmptyR -> orig
-    zs :> z -> SZ (z,((x1s |> x) `mappend` zs , empty))
+toLast :: forall m n a. (SingI m, SingI n) => 
+          NSeqZipper' m n a -> NSeqZipper' (m :+: n) MZero a 
+toLast z@(NSZ x ls rs) = 
+  case sing :: Sing n of
+    MyZero -> gcastWith (plus_id_r (sing :: Sing m)) z
+    MySucc p -> case viewr (MySucc p) rs of
+                  ys :> y -> gcastWith (plus_succ_r p (sing :: Sing m)) $ 
+                             NSZ y (ls >< (x <| ys)) empty
 
 -- | 
-moveL :: SeqZipper a -> Maybe (SeqZipper a)
-moveL (SZ (x,(x1s,x2s))) = 
-  case viewr x1s of
-    EmptyR -> Nothing 
-    zs :> z -> Just (SZ (z,(zs,x<|x2s)))
+toLeft :: forall m n a. (SingI m, SingI n) => 
+          NSeqZipper' (MSucc m) n a -> NSeqZipper' m (MSucc n) a
+toLeft (NSZ x ls rs) = let lview = viewr (sing :: Sing (MSucc m)) ls  
+                       in case lview of
+                            ys :> y -> NSZ y ys (x <| rs) 
 
 -- |
-moveR :: SeqZipper a -> Maybe (SeqZipper a) 
-moveR (SZ (x,(x1s,x2s))) = 
-  case viewl x2s of 
-    EmptyL -> Nothing
-    z :< zs -> Just (SZ (z,(x1s|>x,zs)))
+toRight :: forall m n a. (SingI m, SingI n) => 
+           NSeqZipper' m (MSucc n) a -> NSeqZipper' (MSucc m) n a
+toRight (NSZ x ls rs) = let rview = viewl (sing :: Sing (MSucc n)) rs
+                        in case rview of 
+                             y :< ys -> NSZ y (ls |> x) ys
+
 
 ------------------------
 -- fetch focused item -- 
 ------------------------
 
 -- | 
-current :: SeqZipper a -> a 
-current (SZ (x,(_,_))) = x
+current :: NSeqZipper' m n a -> a 
+current (NSZ x _ _) = x
 
 -- | 
-prev :: SeqZipper a -> Maybe a 
-prev = fmap current . moveLeft
+prev :: (SingI m, SingI n) => NSeqZipper' (MSucc m) n a -> a 
+prev = current . toLeft
 
 -- |
-next :: SeqZipper a -> Maybe a 
-next = fmap current . moveRight
+next :: (SingI m, SingI n) => NSeqZipper' m (MSucc n) a -> a
+next = current . toRight
+
 
 ------------------------------
 -- operation on focues item --
 ------------------------------
 
 -- |
-replace :: a -> SeqZipper a -> SeqZipper a 
-replace y (SZ (_x,zs)) = SZ (y,zs)
+modify :: (a -> a) -> NSeqZipper' m n a -> NSeqZipper' m n a
+modify f (NSZ x ls rs) = NSZ (f x) ls rs
 
 -- |
-delete :: SeqZipper a -> Maybe (SeqZipper a)
-delete (SZ (_,(xs,ys))) = 
+replace :: a -> NSeqZipper' m n a -> NSeqZipper' m n a 
+replace x = modify (const x)
+
+{- difficult
+-- |
+delete :: forall m n m' n' a. (SingI m, SingI n, SingI m', SingI n') => NSeqZipper' m n a -> NSeqZipper' m' n' a
+delete (NSZ _ ls rs) = 
+  case sing
+
+
+
   case viewl ys of 
     EmptyL -> case viewr xs of 
                 EmptyR -> Nothing 
                 zs :> z -> Just (SZ (z,(zs,ys)))
     z :< zs -> Just (SZ (z,(xs,zs)))
 -}
+
 
 -- toSeq :: SeqZipper a -> Seq a
 -- toSeq (SZ (x,(x1s,x2s))) = x1s >< (x <| x2s)
@@ -171,8 +173,5 @@ moveTo n orig@(SZ (x,(x1s,x2s))) =
                         in Just (SZ (el, ((x1s |> x) >< x2s1, rm)))
           | otherwise = error "error in moveTo"
   in res 
-
-
-
 
 -}

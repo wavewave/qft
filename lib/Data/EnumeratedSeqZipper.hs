@@ -2,8 +2,9 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
-
+{-# LANGUAGE UndecidableInstances #-}
 
 module Data.EnumeratedSeqZipper where
 
@@ -14,6 +15,7 @@ import GHC.TypeLits
 -- import Data.Monoid ((<>))
 -- import Data.Sequence 
 -- import Data.Traversable
+import Data.Type.Equality
 --
 import           Data.EnumeratedSequence hiding (singleton)
 -- import qualified Data.EnumeratedSequence as N (singleton)
@@ -21,23 +23,25 @@ import           Data.EnumeratedSequence hiding (singleton)
 -- import Prelude hiding (zipWith, length, splitAt)
 
 -- |
-data NSeqZipper (n :: Nat) a where
+data NSeqZipper' (m :: MNat) (n :: MNat) a where
   --        current   lefts        rights
-  NSZ :: a -> NSeq m a -> NSeq n a -> NSeqZipper (m+n+1) a
+  NSZ :: a -> NSeq' m a -> NSeq' n a -> NSeqZipper' m n a
 
+type NSeqZipper (m :: Nat) (n :: Nat) = NSeqZipper' (FromNat m) (FromNat n) 
 
 -- |
-singleton :: a -> NSeqZipper 1 a  
+singleton :: a -> NSeqZipper 0 0 a  
 singleton x = NSZ x empty empty
 
-{-  
+ 
+ 
 -- | 
-first :: forall m n a. NSeqZipper n a -> NSeqZipper n a 
-first (NSZ x ls rs) = ls
-    case viewl ls of 
-      EmptyL -> orig
-      -- l :< ls' -> NSZ l empty (ls' <> (x <| rs))
--}
+first :: MyNat m -> MyNat n -> NSeqZipper' m n a -> NSeqZipper' MZero (m :+: n) a 
+first MyZero _ z = z 
+first (MySucc p) n (NSZ x ls rs) = 
+    case viewl (MySucc p) ls of 
+      y :< ys -> gcastWith (plus_succ_r p n) (NSZ y empty (ys >< (x <| rs))) --  :: NSeq' (m :+: n) a) 
+
 
 {-
 -- |

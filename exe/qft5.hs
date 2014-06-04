@@ -38,8 +38,13 @@ main = do
     liftIO $ do 
       print lst1
       print lst2
-      print (Nil :: Partition '[] Int) 
-      print (singleton 0 `Cons` lst1 `Cons` lst2 `Cons` Nil :: Partition [ FromNat 1 , FromNat 2, FromNat 3] Int)
+      print (singleton 0 `Cons` lst1 `Cons` lst2 `Cons` Nil)
+  
+
+      -- print (Nil :: Partition '[] Int) 
+      print (singleton 0 `PCons` lst1 `PCons` lst2 `PCons` PNil :: Partition [ '(FromNat 1, NSeq 1 Int) 
+                                                                             , '(FromNat 2, NSeq 2 Int)
+                                                                             , '(FromNat 3, NSeq 3 Int) ] )
 
     return ()
 

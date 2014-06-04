@@ -6,25 +6,57 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Data.Enumerated.Partition where
 
 import Data.Enumerated.Sequence
 -- import Data.FromTuple
 import Data.PeanoNat
+-- import Data.Promotion.Prelude.Base
 
-data Partition (k :: [ PNat ]) a where
-  Nil :: Partition '[] a 
-  Cons :: NSeq' (PSucc n) a -> Partition ns a -> Partition ((PSucc n) ': ns) a
+data Vector (n :: PNat) a where
+  Empty :: Vector PZero a
+  VCons :: a -> Vector n a -> Vector (PSucc n) a
+
+type family Sum (ns :: [PNat]) where
+  Sum '[] = PZero
+  Sum (n ': ns) = n :+: Sum ns
+
+test :: (Sum '[ FromNat 0 , FromNat 0, FromNat 0 ] ~ FromNat 0) => Int
+test = 3
+-- type Sum = Foldr (:+:) PZero
+
+-- chop :: Proxy n -> Vector m a -> (n ,Vector (m-n) a)
+-- chop = undefined 
+
+
+data HList (k :: [*]) where
+  Nil :: HList '[] 
+  Cons :: a -> HList as -> HList (a ': as)
 
 infixr 5 `Cons`
 
-instance Show (Partition '[] a) where
+data Partition (k :: [(PNat,*)]) where
+  PNil :: Partition '[] 
+  PCons :: NSeq' (PSucc n) a -> Partition ns -> Partition ('( PSucc n, NSeq' (PSucc n) a ) ': ns) 
+
+infixr 5 `PCons`
+
+instance Show (HList '[]) where
   show _ = "Nil"
 
-instance (Show a, Show (Partition ns a)) => Show (Partition (n ': ns) a) where
+instance (Show a, Show (HList as)) => Show (HList (a ': as)) where
   show (x `Cons` xs) = show x ++ " : " ++ show xs 
+
+
+instance Show (Partition '[]) where
+  show _ = "PNil"
+
+instance (Show a, Show (Partition ns)) => Show (Partition ('(n,a) ': ns)) where
+  show (x `PCons` xs) = show x ++ " : " ++ show xs 
 
 
 {-
